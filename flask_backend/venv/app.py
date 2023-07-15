@@ -1,12 +1,27 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify, make_response, session
 from flask_sqlalchemy import SQLAlchemy
+
+from flask_cors import CORS, cross_origin
 
 
 from flask_migrate import migrate, Migrate
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import json
+
+
+import jwt
+
+
+from flask_bcrypt import Bcrypt
+
+from functools import wraps
+
+
+
+
+
 
 
 
@@ -16,10 +31,16 @@ db = SQLAlchemy()
 app = Flask(__name__)
 
 app.config["SQLALCHEMY_DATABASE_URI"]= 'postgresql://postgres:Dev%40123@localhost:5432/flask_db'
+app.config["SECRET_KEY"] ="12345678"
 
 db.init_app(app)
 
+CORS(app)
+
+bcrypt= Bcrypt(app)  # for password hashing
+
 migrate = Migrate(app,db)
+
 
 
 # MODELS.....
@@ -85,7 +106,7 @@ class Reference(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     refe_name = db.Column(db.String, unique = False, nullable = False)
     refe_contact_no = db.Column(db.Integer, unique = False , nullable = False)
-    refe_relation = db.Column(db.Integer, unique = False, nullable= False)
+    refe_relation = db.Column(db.String, unique = False, nullable= False)
     candidate_id = db.Column(db.Integer, db.ForeignKey('candidate.id'))
 
 
@@ -100,11 +121,122 @@ class Preference(db.Model):
 
 
 
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key = True)
+    email = db.Column(db.String, unique = True, nullable= False)
+    password = db.Column(db.String, unique= False, nullable = False)
+
+
+
+#  token required
+
+def token_required(fun):
+    @wraps(fun)
+    def decorated(*args, **kwargs):
+        token = request.args.get('token')
+        if not token:
+            return jsonify({"data":"Token is missing"})
+        try:
+            payload = jwt.decode(token, app.config['SECRET_KEY'])
+        except:
+            return jsonify({"data":"Invalid token!"})   
+
+    return decorated             
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@app.route("/register/", methods=["POST"])
+def register():
+    register_data = json.loads(request.data.decode('utf-8'))
+    username = register_data["username"]
+    password = register_data["password"]
+
+    user_obj = User.query.filter_by(email = username).first()
+    print("user_obj:::", user_obj)
+
+    if user_obj:
+        return make_response({"data":"", "message":"User already exists!"}, 200)
+
+    hashed_pwd = bcrypt.generate_password_hash(password).decode('utf-8')
+    user = User(email = username, password = hashed_pwd)
+    db.session.add(user)
+    db.session.commit()
+    return make_response({"data":"", "message":"Successfully register!"}, 200)
+
+
+
+
+
+
+@app.route("/login/", methods=["POST"])
+@cross_origin()
+def login():
+    login_data = json.loads(request.data.decode('utf-8'))
+    print("login data", login_data)
+    username = login_data["username"]
+    password = login_data["password"]
+
+    user = User.query.filter_by(email = username).first()
+
+    if user and bcrypt.check_password_hash(user.password,password):
+        session["is_logged_in"] = True
+        token = jwt.encode({
+            'user':username,
+            'expiration': str(datetime.utcnow() + timedelta(seconds = 120))
+        }, app.config["SECRET_KEY"])
+
+        json_token = json.dumps({'token': token.decode('utf-8')})
+        return make_response({"data":json_token, "message":"successfully login!"}, 200)
+
+    return  make_response({"data":"", "message":"No active account found with the given credentials!"}, 200)   
+
+
+
+    # if username == "ram@gmail.com" and password == "12345678":
+    #     print("TTTTTTTTTTTTTTTTTTTTTTT")
+    #     session["is_logged_in"] = True
+    #     token = jwt.encode({
+    #         'user':username,
+    #         'expiration': str(datetime.utcnow() + timedelta(seconds = 120))
+    #     }, app.config["SECRET_KEY"])
+
+    #     json_token = json.dumps({'token': token.decode('utf-8')})
+
+    #     print("OOOOOOOOOOOOOOOOOOOOOOOOOOOtoken", json_token )
+ 
+
+
+    #     return make_response(json_token, 200)
+
+    #     # return f"successFullu login {token}"
+    # return make_response({"data":"error while login"}, 200)
+
+
+
+
+
 
 # HOME PAGE.....
 @app.route('/')
+@token_required
 def home():
-    return render_template("home.html")
+    # return render_template("home.html")
+    print("Calllllled")
+    return make_response({"data":"", "message":"token verified!"}, 200)   
 
 
 # CREATE CANDIDATE......
@@ -160,14 +292,88 @@ def create_experience():
     db.session.add(expe_obj)
     db.session.commit()
 
-    return f"Academic created successfully !! {expe_obj} "
+    return f"Experience created successfully !! {expe_obj} "
 
 
 
 
-# @app.route("/create_language", methods=["POST"])
-# def create_language():
-#     language =
+@app.route("/create_language", methods=["POST"])
+def create_language():
+    language = json.loads(request.data.decode('utf-8'))
+
+    lang_obj = Language(language= language["language"],
+                        read = language['read'],
+                        write = language["write"],
+                        speak = language['speak'],
+                        candidate_id=language["candidate_id"]
+                        )
+
+
+    db.session.add(lang_obj)
+    db.session.commit()
+
+    return f"Language  created successfully !! {lang_obj} "
+
+
+
+@app.route("/create_technology", methods=["POST"])
+def create_techmology():
+    technology = json.loads(request.data.decode('utf-8'))
+
+    tech_obj = Technology(technology = technology["technology"],
+                          ranting = technology["ranting"],
+                          candidate_id=technology["candidate_id"]
+                          )
+
+    db.session.add(tech_obj)
+
+    db.session.commit()
+
+
+    return f"Technology created successfully !!! {tech_obj}"
+
+
+
+@app.route("/create_reference", methods= ["POST"])
+def create_reference():
+    reference = json.loads(request.data.decode('utf-8'))
+
+    refe_obj = Reference(refe_name = reference["refe_name"],
+                         refe_contact_no = reference["refe_contact_no"],
+                         refe_relation = reference["refe_relation"],
+                         candidate_id=reference["candidate_id"]
+                         )
+
+
+    db.session.add(refe_obj)
+    db.session.commit()
+
+    return f"Reference created successfully !!! {refe_obj}"
+
+
+
+
+@app.route("/create_preference", methods=["POST"])
+def create_preference():
+    preference = json.loads(request.data.decode('utf-8'))
+
+    pref_obj = Preference(prefer_location = preference["prefer_location"],
+                          notice_period = preference["notice_period"],
+                          expected_ctc = preference["expected_ctc"],
+                          current_ctc = preference["current_ctc"],
+                          department = preference["department"],
+                          candidate_id = preference["candidate_id"]
+
+                          )
+
+    db.session.add(pref_obj)
+    db.session.commit()
+
+    return f"Preference created successfully!!! {pref_obj}"
+
+
+
+
 
 
 
@@ -181,6 +387,7 @@ def show_candidates():
     print("all_candidates:::", all_candidates[0][0].fname, "json::::", cand)
 
     for candidate in all_candidates:
+        print("candidate[0].academics:::::::::::::::::::::::::::::::::::::::", candidate[0].academics)
         c = {
             'fname': candidate[0].fname,
             'lname': candidate[0].lname,
@@ -190,7 +397,38 @@ def show_candidates():
             'state': candidate[0].state,
             'gender' : candidate[0].gender,
             'email' : candidate[0].email,
-            'dob': candidate[0].dob
+            'dob': candidate[0].dob,
+            'academics': [{"course_name" : aca.course_name,
+                           "name_of_board_university" : aca.name_of_board_university,
+                           "passing_year" : aca.passing_year,
+                           "percentage": aca.percentage
+                           } for aca in candidate[0].academics ],
+
+            'experiences' : [{"company_name" : exe.company_name,
+                              "designation" : exe.designation,
+                              "from_date": exe.from_date,
+                              "to_date":exe.to_date} for exe in candidate[0].experiences ],
+
+            'languages' : [{"language": lan.language,
+                            "read": lan.read,
+                            "write": lan.write,
+                            "speak": lan.speak} for lan in candidate[0].languages ],
+
+
+            "technologies" : [{"technology": tec.technology,
+                               "ranting": tec.ranting} for tec in candidate[0].technologies ],
+
+            "references" : [{"refe_name": ref.refe_name,
+                             "refe_contact_no": ref.refe_contact_no,
+                             "refe_relation": ref.refe_relation} for ref in candidate[0].references ],
+
+
+            "preferences" : [{"prefer_location" : pre.prefer_location,
+                              "notice_period" : pre.notice_period,
+                              "expected_ctc": pre.expected_ctc,
+                              "current_ctc": pre.current_ctc,
+                              "department" : pre.department} for pre in candidate[0].preferences ]
+
 
         }
         cand.append(c)
