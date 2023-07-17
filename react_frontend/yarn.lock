@@ -7781,6 +7781,11 @@ react-scripts@5.0.1:
   optionalDependencies:
     fsevents "^2.3.2"
 
+react-token-auth@^2.3.8:
+  version "2.3.8"
+  resolved "https://registry.yarnpkg.com/react-token-auth/-/react-token-auth-2.3.8.tgz#8c86e1e36f05368ea22afc553c5f105826db9356"
+  integrity sha512-sRy4xpPY0NgTXL/kwQ0LqUZpHiurLG/4lSr9MAVPAuvN/hnjQqAcszl+c869ZO6Pegj2/OEP0MDmvMBJv1SkHQ==
+
 react@^18.2.0:
   version "18.2.0"
   resolved "https://registry.yarnpkg.com/react/-/react-18.2.0.tgz#555bd98592883255fa00de14f1151a917b5d77d5"

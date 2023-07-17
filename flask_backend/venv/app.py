@@ -19,11 +19,33 @@ from flask_bcrypt import Bcrypt
 from functools import wraps
 
 
+import flask_praetorian
 
 
+# .........
+from sqlalchemy.ext.automap import automap_base
+from sqlalchemy.orm import Session
+from sqlalchemy import create_engine
+
+import pandas as pd
+
+Base = automap_base()
+
+engine = create_engine('postgresql://postgres:Dev%40123@localhost:5432/rest_job_app')
 
 
+Base.prepare(autoload_with = engine)
 
+
+Select = Base.classes.job_selectmaster
+Option = Base.classes.job_optionmaster
+City = Base.classes.job_citymaster
+State = Base.classes.job_statemaster
+
+session = Session(engine)
+
+
+guard = flask_praetorian.Praetorian()
 
 
 db = SQLAlchemy()
@@ -31,6 +53,9 @@ db = SQLAlchemy()
 app = Flask(__name__)
 
 app.config["SQLALCHEMY_DATABASE_URI"]= 'postgresql://postgres:Dev%40123@localhost:5432/flask_db'
+
+app.config["SQLALCHEMY_BINDS"]={"dropdown": 'postgresql://postgres:Dev%40123@localhost:5432/rest_job_app'}
+
 app.config["SECRET_KEY"] ="12345678"
 
 db.init_app(app)
@@ -40,6 +65,56 @@ CORS(app)
 bcrypt= Bcrypt(app)  # for password hashing
 
 migrate = Migrate(app,db)
+
+
+app.config['JWT_ACCESS_LIFESPAN'] = {'hours' : 24}
+
+app.config['JWT_REFRESH_LIFESPAN'] = {'days' : 30}
+
+
+# with app.app_context():
+#     db.Model.metadata.reflect(engine)
+#     print(" db.Model.metadata.tables@@@@@@",  db.Model.metadata.tables["job_selectmaster"])
+
+# class State(db.Model):
+#     __bind_key__ = "dropdown"
+#     __table__ = db.Model.metadata.tables['job_selectmaster']
+    
+
+
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key = True)
+    email = db.Column(db.String, unique = True, nullable= False)
+    password = db.Column(db.String, unique= False, nullable = False)
+    roles = db.Column(db.Text)
+    is_active = db.Column(db.Boolean, default=True, server_default='true')
+
+    @property
+    def rolenames(self):
+        try:
+            return self.roles.split(',')
+        except Exception:
+            return []
+
+    @classmethod
+    def lookup(cls, email):
+        return cls.query.filter_by(email=email).one_or_none()
+
+
+    @classmethod
+    def identify(cls, id):
+        return cls.query.get(id)
+
+    @property
+    def identity(self):
+        return self.id    
+
+
+
+guard.init_app(app, User)    
+
+
+
 
 
 
@@ -121,10 +196,6 @@ class Preference(db.Model):
 
 
 
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key = True)
-    email = db.Column(db.String, unique = True, nullable= False)
-    password = db.Column(db.String, unique= False, nullable = False)
 
 
 
@@ -166,7 +237,7 @@ def register():
     password = register_data["password"]
 
     user_obj = User.query.filter_by(email = username).first()
-    print("user_obj:::", user_obj)
+    # print("user_obj:::", user_obj)
 
     if user_obj:
         return make_response({"data":"", "message":"User already exists!"}, 200)
@@ -184,25 +255,44 @@ def register():
 
 @app.route("/login/", methods=["POST"])
 @cross_origin()
-def login():
+def login():   
+
     login_data = json.loads(request.data.decode('utf-8'))
-    print("login data", login_data)
+    # print("login data", login_data)
     username = login_data["username"]
     password = login_data["password"]
 
-    user = User.query.filter_by(email = username).first()
+    try:
+        user = guard.authenticate(username, password)
+        # print("userrrrr::::", user)
+        return make_response({'access_token': guard.encode_jwt_token(user)}, 200)
 
-    if user and bcrypt.check_password_hash(user.password,password):
-        session["is_logged_in"] = True
-        token = jwt.encode({
-            'user':username,
-            'expiration': str(datetime.utcnow() + timedelta(seconds = 120))
-        }, app.config["SECRET_KEY"])
+    except:
+        return make_response({"data":"", "message":"No active account found with the given credentials!"}, 200)   
+ 
 
-        json_token = json.dumps({'token': token.decode('utf-8')})
-        return make_response({"data":json_token, "message":"successfully login!"}, 200)
+    # if user: 
+    #     return make_response({'access_token': guard.encode_jwt_token(user)}, 200)
+    # else:
 
-    return  make_response({"data":"", "message":"No active account found with the given credentials!"}, 200)   
+    #     return make_response({"data":"", "message":"No active account found with the given credentials!"}, 200)   
+ 
+
+
+
+    # user = User.query.filter_by(email = username).first()
+
+    # if user and bcrypt.check_password_hash(user.password,password):
+    #     session["is_logged_in"] = True
+    #     token = jwt.encode({
+    #         'user':username,
+    #         'expiration': str(datetime.utcnow() + timedelta(seconds = 120))
+    #     }, app.config["SECRET_KEY"])
+
+    #     json_token = json.dumps({'token': token.decode('utf-8')})
+    #     return make_response({"data":json_token, "message":"successfully login!"}, 200)
+
+    # return  make_response({"data":"", "message":"No active account found with the given credentials!"}, 200)   
 
 
 
@@ -227,25 +317,90 @@ def login():
 
 
 
+@app.route("/refresh", methods=["POST"])
+def refresh():
+    old_token = request.get_data()
+    new_token = guard.refresh_jwt_token(old_token)
+    return make_response({'access_token': new_token}, 200)
 
 
+
+# .....................................all drop down data.........
+
+
+@app.route("/select_all/<id>", methods=["GET"])
+def select_all(id):
+    try:
+        result = session.query(Option).filter_by(select_id = id)
+        data = json.dumps([{i:v for i, v in r.__dict__.items() if i in r.__table__.columns.keys()} for r in result])    
+        # print("PPP", json.loads(data))
+        return make_response({"data": json.loads(data), "message":"Success"}, 200)
+    except:
+        return make_response({"data":"", "message": "Error while fetching dropdown data!!"}, 200)    
+
+
+@app.route("/fetch_state/")
+def fetch_state():
+
+    try:
+        res = session.query(State).all()
+        data = json.dumps([{i:v for i, v in r.__dict__.items() if i in r.__table__.columns.keys()} for r in res])    
+        # print("PPP", json.loads(data))
+        return make_response({"data": json.loads(data), "message":"Success"}, 200)
+    except:
+        return make_response({"data":"", "message": "Error while fetching state data!!"}, 200)  
+
+
+@app.route("/fetch_city/", methods=["POST"])
+def fetch_city():
+    try:
+        req = json.loads(request.data.decode('utf-8'))
+        state = req["state"]
+   
+        # print("State in request:   ", state)
+        result = session.query(State).filter_by(name=state)
+        state_obj = json.dumps([{i:v for i, v in r.__dict__.items() if i in r.__table__.columns.keys()} for r in result])    
+        # print("STATEEEEE :::", json.loads(state_obj)[0]["id"])
+        state_id = json.loads(state_obj)[0]["id"]
+        # print("State object and state id", state_obj, state_id)
+        city_data = session.query(City).filter_by(state_id = state_id) 
+        city_obj = json.dumps([{i:v for i, v in r.__dict__.items() if i in r.__table__.columns.keys()} for r in city_data])    
+        # print("City obj:     ", city_obj) 
+
+
+        return make_response({"data": json.loads(city_obj), "message":"Success"}, 200) 
+    
+    except:
+
+        return make_response({"data":"", "message": "Error while fetching city data!!"}, 200)  
 
 # HOME PAGE.....
-@app.route('/')
-@token_required
+@app.route('/home')
+# @token_required
+@flask_praetorian.auth_required
 def home():
     # return render_template("home.html")
     print("Calllllled")
-    return make_response({"data":"", "message":"token verified!"}, 200)   
+    return make_response({"data":"Hello", "message":"token verified!"}, 200)   
 
 
 # CREATE CANDIDATE......
 @app.route('/create_candidate', methods= ['POST'])
+@flask_praetorian.auth_required
 def create_candidate():
-    candidate = json.loads(request.data.decode('utf-8'))
-    print(candidate)
+    
+    try:
+        print("In try req?::::", request)
+        print("In try req json method?::::", request.method)
 
-    cand_obj = Candidate(fname=candidate['fname'],
+
+        print("In try req body?::::fname",json.loads(request.data.decode('utf-8')))
+
+        # candidate = request.get_json()
+        candidate = json.loads(request.data.decode('utf-8'))
+        print(candidate)
+
+        cand_obj = Candidate(fname=candidate['fname'],
                          lname = candidate["lname"],
                          surname = candidate["surname"],
                          contact_no = candidate["contact_no"],
@@ -256,12 +411,18 @@ def create_candidate():
                          dob = candidate["dob"]
 
                          )
-    db.session.add(cand_obj)
-    db.session.commit()
-    return f"Successfully created!! {cand_obj}"
+        db.session.add(cand_obj)
+        db.session.commit()
+        print("COMIIITEDDDD!!", cand_obj)
+        return make_response({"data":"heklloooool", "message":"Successfully created candidate"}, 200)
+        # return f"Successfully created!! {cand_obj}"
+    except:
+        return make_response({"data":"", "message":"Error while creating candidate in backend"}, 200)    
+
 
 
 @app.route("/create_academic", methods=["POST"])
+@flask_praetorian.auth_required
 def create_academic():
     academic = json.loads(request.data.decode('utf-8'))
     acad_obj = Academic(course_name = academic['course_name'],
@@ -279,6 +440,7 @@ def create_academic():
 
 
 @app.route("/create_experience", methods=["POST"])
+@flask_praetorian.auth_required
 def create_experience():
     experience = json.loads(request.data.decode('utf-8'))
 
@@ -298,6 +460,7 @@ def create_experience():
 
 
 @app.route("/create_language", methods=["POST"])
+@flask_praetorian.auth_required
 def create_language():
     language = json.loads(request.data.decode('utf-8'))
 
@@ -317,6 +480,7 @@ def create_language():
 
 
 @app.route("/create_technology", methods=["POST"])
+@flask_praetorian.auth_required
 def create_techmology():
     technology = json.loads(request.data.decode('utf-8'))
 
@@ -335,6 +499,7 @@ def create_techmology():
 
 
 @app.route("/create_reference", methods= ["POST"])
+@flask_praetorian.auth_required
 def create_reference():
     reference = json.loads(request.data.decode('utf-8'))
 
@@ -354,6 +519,7 @@ def create_reference():
 
 
 @app.route("/create_preference", methods=["POST"])
+@flask_praetorian.auth_required
 def create_preference():
     preference = json.loads(request.data.decode('utf-8'))
 
@@ -380,14 +546,15 @@ def create_preference():
 
 # SHOW CANDIDATES
 @app.route('/show_candidates', methods=['GET'])
+@flask_praetorian.auth_required
 def show_candidates():
     all_candidates = db.session.execute(db.select(Candidate)).all()
     cand = []
 
-    print("all_candidates:::", all_candidates[0][0].fname, "json::::", cand)
+    # print("all_candidates:::", all_candidates[0][0].fname, "json::::", cand)
 
     for candidate in all_candidates:
-        print("candidate[0].academics:::::::::::::::::::::::::::::::::::::::", candidate[0].academics)
+        # print("candidate[0].academics:::::::::::::::::::::::::::::::::::::::", candidate[0].academics)
         c = {
             'fname': candidate[0].fname,
             'lname': candidate[0].lname,
@@ -443,10 +610,11 @@ def show_candidates():
 
 # UPDATE............................
 @app.route("/update_candidate/<id>", methods=["POST"])
+@flask_praetorian.auth_required
 def update_candidate(id):
     updated_data = json.loads(request.data.decode('utf-8'))
     candidate = db.get_or_404(Candidate, id)
-    print("..............candidate", candidate, "updated data::::::", updated_data )
+    # print("..............candidate", candidate, "updated data::::::", updated_data )
     candidate.fname = updated_data['fname']
     candidate.lname = updated_data['lname']
     candidate.surname = updated_data['surname']
@@ -464,6 +632,7 @@ def update_candidate(id):
 
 
 @app.route("/update_academics/<id>", methods=["POST"])
+@flask_praetorian.auth_required
 def update_academics(id):
     updated_data = json.loads(request.data.decode('utf-8'))
     academics = db.get_or_404(Academic, id)
@@ -479,6 +648,7 @@ def update_academics(id):
 
 
 @app.route("/update_experiences/<id>", methods=['POST'])
+@flask_praetorian.auth_required
 def update_experience(id):
     updated_data = json.loads(request.data.decode('utf-8'))
     experiences = db.get_or_404(Experience, id)
@@ -494,6 +664,7 @@ def update_experience(id):
 
 
 @app.route("/update_languages/<id>", methods=["POST"])
+@flask_praetorian.auth_required
 def update_languages(id):
     updated_data = json.loads(request.data.decode('utf-8'))
 
@@ -511,6 +682,7 @@ def update_languages(id):
 
 
 @app.route("/update_technologies/<id>", methods=["POST"])
+@flask_praetorian.auth_required
 def update_technologies(id):
     updated_data = json.loads(request.data.decode('utf-8'))
 
@@ -526,6 +698,7 @@ def update_technologies(id):
 
 
 @app.route("/update_references/<id>", methods=['POST'])
+@flask_praetorian.auth_required
 def update_references(id):
     updated_data = json.loads(request.data.decode('utf-8'))
 
@@ -542,6 +715,7 @@ def update_references(id):
 
 
 @app.route("/update_preferences/<id>", methods= ["POST"])
+@flask_praetorian.auth_required
 def update_preferences(id):
     updated_data = json.loads(request.data.decode('utf-8'))
 
@@ -563,6 +737,7 @@ def update_preferences(id):
 # DELETE......................................
 
 @app.route("/delete_candidate/<id>", methods=["DELETE"])
+@flask_praetorian.auth_required
 def delete_candidate(id):
 
     candidate = db.get_or_404(Candidate, id)
@@ -574,6 +749,7 @@ def delete_candidate(id):
 
 
 @app.route("/delete_academic/<id>", methods=["DELETE"])
+@flask_praetorian.auth_required
 def delete_academic(id):
 
     academic = db.get_or_404(Academic, id)
@@ -586,6 +762,7 @@ def delete_academic(id):
 
 
 @app.route("/delete_experience/<id>", methods=["DELETE"])
+@flask_praetorian.auth_required
 def delete_experience(id):
 
     experience = db.get_or_404(Experience, id)
@@ -600,6 +777,7 @@ def delete_experience(id):
 
 
 @app.route("/delete_language/<id>", methods=["DELETE"])
+@flask_praetorian.auth_required
 def delete_language(id):
 
     language = db.get_or_404(Language, id)
@@ -614,6 +792,7 @@ def delete_language(id):
 
 
 @app.route("/delete_technology/<id>", methods=["DELETE"])
+@flask_praetorian.auth_required
 def delete_technology(id):
 
     technology = db.get_or_404(Technology, id)
@@ -627,6 +806,7 @@ def delete_technology(id):
 
 
 @app.route("/delete_reference/<id>", methods=["DELETE"])
+@flask_praetorian.auth_required
 def delete_reference(id):
 
     reference = db.get_or_404(Reference, id)
@@ -640,6 +820,7 @@ def delete_reference(id):
 
 
 @app.route("/delete_preference/<id>", methods=["DELETE"])
+@flask_praetorian.auth_required
 def delete_preference(id):
 
     preference = db.get_or_404(Preference, id)
@@ -661,7 +842,7 @@ def delete_preference(id):
 
 
 
-with app.app_context():
+with app.app_context(): 
     db.create_all()
 
 # with app.test_request_context("/create_candidate"):

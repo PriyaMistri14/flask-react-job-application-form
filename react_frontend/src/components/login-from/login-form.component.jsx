@@ -6,7 +6,7 @@ import React from 'react'
 import { Formik, Field, Form, ErrorMessage } from 'formik'
 
 import * as Yup from 'yup'
-import axiosIntance from '../../axiosApi'
+import axiosIntance, { login } from '../../axiosApi'
 
 import axios from 'axios'
 
@@ -37,7 +37,6 @@ function LoginForm() {
 
     const onSubmit = async (values, form) => {
         console.log('form values::', values, "form::", form)
-
         try {
 
             const res = await axiosIntance.post('http://127.0.0.1:5000/login/', {
@@ -45,41 +44,61 @@ function LoginForm() {
                 password: values.password
             })
 
-            // const res = await axiosIntance.post('http://127.0.0.1:8000/login/', {
-            //     username: values.username,
-            //     password: values.password
-            // })
-           
-
-            if (res.data.message === "No active account found with the given credentials!") {
+            console.log("RESPONSEE:   ", res)
+            if(res.data.access_token){
+                login(res.data)
+                navigate("/input-form/")
+            }
+            else{
                 form.setFieldError("password", "No active account found with the given credentials")
             }
-            else {
-                console.log(' response tokens:', JSON.parse(res.data.data).token)
 
-                axiosIntance.defaults.headers['Authorization'] = 'JWT ' + JSON.parse(res.data.data).token
-                localStorage.setItem("access_token", JSON.parse(res.data.data).token)
-                // localStorage.setItem("refresh_token", res.data.refresh)
-                navigate("/input-form/")
-
-            }
-
-            // axiosIntance.defaults.headers['Authorization'] = 'JWT ' + res.data.access
-            // localStorage.setItem("access_token", res.data.access)
-            // localStorage.setItem("refresh_token", res.data.refresh)
-
-            // navigate("/input-form/")
-
-        } catch (error) {
-            console.log("ERRORRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR:", error)
-            // console.log("Error while login with invalid credential:", error.response.data.detail)
-
-            // if (error.response.data.detail === "No active account found with the given credentials") {
-            //     form.setFieldError("password", "No active account found with the given credentials")
-
-            // }
-
+        } catch (err) {
+            console.log("Error while login : ", err)
         }
+
+        // try {
+
+        //     const res = await axiosIntance.post('http://127.0.0.1:5000/login/', {
+        //         username: values.username,
+        //         password: values.password
+        //     })
+
+        //     // const res = await axiosIntance.post('http://127.0.0.1:8000/login/', {
+        //     //     username: values.username,
+        //     //     password: values.password
+        //     // })
+
+
+        //     if (res.data.message === "No active account found with the given credentials!") {
+        //         form.setFieldError("password", "No active account found with the given credentials")
+        //     }
+        //     else {
+        //         console.log(' response tokens:', JSON.parse(res.data.data).token)
+
+        //         axiosIntance.defaults.headers['Authorization'] = 'JWT ' + JSON.parse(res.data.data).token
+        //         localStorage.setItem("access_token", JSON.parse(res.data.data).token)
+        //         // localStorage.setItem("refresh_token", res.data.refresh)
+        //         navigate("/input-form/")
+
+        //     }
+
+        //     // axiosIntance.defaults.headers['Authorization'] = 'JWT ' + res.data.access
+        //     // localStorage.setItem("access_token", res.data.access)
+        //     // localStorage.setItem("refresh_token", res.data.refresh)
+
+        //     // navigate("/input-form/")
+
+        // } catch (error) {
+        //     console.log("ERRORRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR:", error)
+        //     // console.log("Error while login with invalid credential:", error.response.data.detail)
+
+        //     // if (error.response.data.detail === "No active account found with the given credentials") {
+        //     //     form.setFieldError("password", "No active account found with the given credentials")
+
+        //     // }
+
+        // }
     }
 
 

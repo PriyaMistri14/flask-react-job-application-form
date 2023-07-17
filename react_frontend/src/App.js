@@ -6,7 +6,7 @@ import InputForm from './components/input-form/input-form.component';
 import React from 'react';
 
 
-import axiosIntance from './axiosApi';
+import axiosIntance, { logout, useAuth, authFetch } from './axiosApi';
 
 import LoginForm from './components/login-from/login-form.component';
 import RegistrationForm from './components/registration-form/registration-form.component';
@@ -23,6 +23,7 @@ import Update from './components/update/update.component';
 function App() {
 
   const navigate = useNavigate()
+  const [ logged ] = useAuth()
 
 
   const logoutHandler = async () => {
@@ -50,13 +51,27 @@ function App() {
 
 
 
+  const fetch_home = async()=>{
+    const resCand = await authFetch("http://127.0.0.1:5000/home")
+    const res =  await resCand.json()
+    console.log("Fetched home ::", res)
+    // console.log("Fetched home ::", resCand.data.data, resCand.data.message)
+  }
+
+
+
+
   return (
     <div className="App">
       <nav className='nav-bar'>
         {
-          localStorage.getItem("access_token")
-          && axiosIntance.defaults.headers['Authorization']
-          && <span onClick={logoutHandler}><strong>Log Out</strong></span> || <Link to="/login/" className='nav-link'><strong>Login</strong></Link>
+             !logged ? <Link to="/login/" className='nav-link'><strong>Login</strong></Link>
+             : <span onClick={()=>{logout()
+            navigate("/login/")}}><strong>Log Out</strong></span>
+
+          // localStorage.getItem("access_token")
+          // && axiosIntance.defaults.headers['Authorization']
+          // && <span onClick={logoutHandler}><strong>Log Out</strong></span> || <Link to="/login/" className='nav-link'><strong>Login</strong></Link>
 
 
 
@@ -66,6 +81,7 @@ function App() {
         {/* <Link to="/register/" className='nav-link' >Register</Link> */}
         <Link to="/input-form/" className='nav-link' ><strong>Input Form</strong></Link>
         <Link to="/show-candidate/" className='nav-link' ><strong>Show Candidate</strong></Link>
+        <p onClick={fetch_home}>Home</p>
 
       </nav>
 

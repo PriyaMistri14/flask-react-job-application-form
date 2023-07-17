@@ -12,41 +12,36 @@ import { useNavigate } from 'react-router-dom'
 
 import { useParams } from 'react-router-dom'
 
+import { useAuth, authFetch } from '../../axiosApi'
 
-// const course = await axiosIntance.get("http://127.0.0.1:8000/job/select_all/1/")
-// console.log("Courses", course.data.options)
-// const allCourses = course.data.options
 
-// const language = await axiosIntance.get("http://127.0.0.1:8000/job/select_all/2/")
-// console.log("allLanguages", language.data.options)
-// const allLanguages = language.data.options
+const course = await axiosIntance.get("http://127.0.0.1:5000/select_all/1")
+console.log("Courses******************", course.data.data)
+const allCourses = course.data.data
 
-// const technology = await axiosIntance.get("http://127.0.0.1:8000/job/select_all/3/")
-// console.log("allTechnology", technology.data.options)
-// const allTechnologies = technology.data.options
+const language = await axiosIntance.get("http://127.0.0.1:5000/select_all/2")
+console.log("allLanguages", language.data.data)
+const allLanguages = language.data.data
 
-// const prefer_location = await axiosIntance.get("http://127.0.0.1:8000/job/select_all/4/")
-// console.log("allPreferLocation", prefer_location.data.options)
-// const allPreferLocations = prefer_location.data.options
+const technology = await axiosIntance.get("http://127.0.0.1:5000/select_all/3")
+console.log("allTechnology", technology.data.data)
+const allTechnologies = technology.data.data
 
-// const department = await axiosIntance.get("http://127.0.0.1:8000/job/select_all/5/")
-// console.log("allDepartment", department.data.options)
-// const allDepartments = department.data.options
+const prefer_location = await axiosIntance.get("http://127.0.0.1:5000/select_all/4")
+console.log("allPreferLocation", prefer_location.data.data)
+const allPreferLocations = prefer_location.data.data
 
-// const state = await axiosIntance.get("http://127.0.0.1:8000/job/state/")
-// console.log("allState", state.data)
-// const allStates = state.data
+const department = await axiosIntance.get("http://127.0.0.1:5000/select_all/5")
+console.log("allDepartment", department.data.data)
+const allDepartments = department.data.data
 
-const allCourses =[]
-const allLanguages =[]
-const allTechnologies =[]
-const allStates =[]
-const allDepartments =[]
-const allPreferLocations =[]
-
+const state = await axiosIntance.get("http://127.0.0.1:5000/fetch_state/")
+console.log("allState", state.data.data)
+const allStates = state.data.data
 
 
 const InputForm = () => {
+    
 
 
     var isCreate = true
@@ -58,13 +53,20 @@ const InputForm = () => {
     const { candidate_id } = useParams()
     candidate_id ? isCreate = false : isCreate = true
 
+    const [logged] = useAuth()
+
+  
+
 
     useEffect(() => {
-        if (!(localStorage.getItem("access_token") && axiosIntance.defaults.headers['Authorization'])) {
-            navigate("/login/")
+        // if (!(localStorage.getItem("access_token") && axiosIntance.defaults.headers['Authorization'])) {
+        //     navigate("/login/")
 
-        }
-
+        // }
+       if (!localStorage.getItem("REACT_TOKEN_AUTH_KEY"))
+       {
+        navigate("/login/")
+       }
 
     }, [])
 
@@ -88,14 +90,15 @@ const InputForm = () => {
 
     const getCity = async (state) => {
 
+
         var cities = []
 
         try {
-            const city = await axiosIntance.post("http://127.0.0.1:8000/job/getCities/", {
+            const city = await axiosIntance.post("http://127.0.0.1:5000/fetch_city/", {
                 state: state
             })
 
-            cities = city.data.fetched_cities
+            cities = city.data.data
 
 
         } catch (error) {
@@ -108,30 +111,30 @@ const InputForm = () => {
 
 
     const initialValuesForCreate = {
-        fname: "",
-        lname: "",
-        surname: "",
-        email: "",
-        phone: "",
-        gender: "",
-        state: "",
+        fname: "abc",
+        lname: "gfgdfg",
+        surname: "fgdfg",
+        email: "a@gmail.com",
+        phone: "1234567890",
+        gender: "Female",
+        state: "Gujarat",
         cities: [],
         city: "",
         dob: "",
 
         academics: [
             {
-                courseName: "",
-                nameOfBoardUniversity: "",
-                passingYear: "",
-                percentage: "",
+                courseName: "fdg",
+                nameOfBoardUniversity: "dfgdf",
+                passingYear: "2014",
+                percentage: "90",
             }
         ],
 
         experiences: [
             {
-                companyName: "",
-                designation: "",
+                companyName: "dfdsg",
+                designation: "hr",
                 from: "",
                 to: ""
             }
@@ -156,21 +159,21 @@ const InputForm = () => {
 
         references: [
             {
-                name: "",
-                contactNo: "",
-                relation: ""
+                name: "hgfhgf",
+                contactNo: "1212121212",
+                relation: "father"
             },
             {
-                name: "",
-                contactNo: "",
-                relation: ""
+                name: "sdfsdf",
+                contactNo: "5656565656",
+                relation: "mother"
             }
         ],
 
 
-        noticePeriod: "",
-        expectedCTC: "",
-        currentCTC: "",
+        noticePeriod: "1",
+        expectedCTC: "1",
+        currentCTC: "1",
         department: "",
 
 
@@ -185,137 +188,171 @@ const InputForm = () => {
     const createCandidate = async (values) => {
         try {
 
-            const resCand = await axiosIntance.post("http://127.0.0.1:8000/job/candidate/", {
-                fname: values.fname,
-                lname: values.lname,
-                surname: values.surname,
-                email: values.email,
-                contact_no: values.phone,
-                city: values.city,
-                state: values.state,
-                gender: values.gender,
-                dob: values.dob
+            // const resCand = await axiosIntance.post("http://127.0.0.1:5000/create_candidate", {
+            //     fname: values.fname,
+            //     lname: values.lname,
+            //     surname: values.surname,
+            //     email: values.email,
+            //     contact_no: values.phone,
+            //     city: values.city,
+            //     state: values.state,
+            //     gender: values.gender,
+            //     dob: values.dob
+            // })
+ 
+            const fname= values.fname
+            const lname = values.lname
+            const surname = values.surname
+
+            const resCand = await authFetch("http://127.0.0.1:5000/create_candidate",{
+                method:'POST',
+                body:{fname, lname, surname},
+                // fname: values.fname,
+                // lname: values.lname,
+                // surname: values.surname,
+                // email: values.email,
+                // contact_no: values.phone,
+                // city: values.city,
+                // state: values.state,
+                // gender: values.gender,
+                // dob: values.dob
+                // method:"POST",
+                // body:{
+                //     "fname": values.fname,
+                //     "lname": values.lname,
+                //     "surname": values.surname,
+                //     "email": values.email,
+                //     "contact_no": values.phone,
+                //     "city": values.city,
+                //     "state": values.state,
+                //     "gender": values.gender,
+                //     "dob": values.dob
+
+                // }
             })
-            console.log("Response candidate created:", resCand)
+           
+            const res = await resCand.json()
+
+            console.log("Response candidate created:", res.data, res.message)
 
 
-            if (values.academics.length != 0) {
-                const res = values.academics.map(async (academic) => {
+            // if (values.academics.length != 0) {
+            //     const res = values.academics.map(async (academic) => {
 
-                    const resAcademics = await axiosIntance.post("http://127.0.0.1:8000/job/academic/", {
-                        course_name: academic.courseName,
-                        name_of_board_university: academic.nameOfBoardUniversity,
-                        passing_year: academic.passingYear,
-                        percentage: academic.percentage,
-                        candidate: resCand.data.id
+            //         const resAcademics = await axiosIntance.post("http://127.0.0.1:8000/job/academic/", {
+            //             course_name: academic.courseName,
+            //             name_of_board_university: academic.nameOfBoardUniversity,
+            //             passing_year: academic.passingYear,
+            //             percentage: academic.percentage,
+            //             candidate: resCand.data.id
 
-                    })
+            //         })
 
-                    console.log("Response academic created:", resAcademics)
-                })
-
-
-            }
+            //         console.log("Response academic created:", resAcademics)
+            //     })
 
 
-            if (values.experiences.length != 0) {
-                const res = values.experiences.map(async (experience) => {
-
-                    const resExperience = await axiosIntance.post("http://127.0.0.1:8000/job/experience/", {
-                        company_name: experience.companyName,
-                        designation: experience.designation,
-                        from_date: experience.from,
-                        to_date: experience.to,
-                        candidate: resCand.data.id
-                    })
-
-                    console.log("Response experience created:", resExperience)
-                })
+            // }
 
 
-            }
+            // if (values.experiences.length != 0) {
+            //     const res = values.experiences.map(async (experience) => {
+
+            //         const resExperience = await axiosIntance.post("http://127.0.0.1:8000/job/experience/", {
+            //             company_name: experience.companyName,
+            //             designation: experience.designation,
+            //             from_date: experience.from,
+            //             to_date: experience.to,
+            //             candidate: resCand.data.id
+            //         })
+
+            //         console.log("Response experience created:", resExperience)
+            //     })
 
 
-
-
-
-            if (values.languages.length != 0) {
-                const res = values.languages.map(async (language) => {
-                    if (language != undefined && language.languageName.length != 0) {
-
-                        const resLanguage = await axiosIntance.post("http://127.0.0.1:8000/job/language/", {
-                            language: language.languageName[0],
-                            read: language.read,
-                            write: language.write,
-                            speak: language.speak,
-                            candidate: resCand.data.id
-                        })
-                        console.log("Response language created:", resLanguage)
-                    }
-
-                })
-
-
-            }
-
-
-
-            if (values.technologies.length != 0) {
-                const res = values.technologies.map(async (technology) => {
-                    if (technology != undefined && technology.technologyName.length != 0) {
-
-                        const resTechnology = await axiosIntance.post("http://127.0.0.1:8000/job/technology/", {
-                            technology: technology.technologyName[0],
-                            ranting: technology.rating,
-                            candidate: resCand.data.id
-                        })
-                        console.log("Response technology created:", resTechnology)
-                    }
-
-                })
-
-
-            }
+            // }
 
 
 
 
-            if (values.references.length != 0) {
-                const res = values.references.map(async (reference) => {
 
-                    const resReference = await axiosIntance.post("http://127.0.0.1:8000/job/reference/", {
-                        refe_name: reference.name,
-                        refe_contact_no: reference.contactNo,
-                        refe_relation: reference.relation,
-                        candidate: resCand.data.id
-                    })
-                    console.log("Response relation created:", resReference)
+            // if (values.languages.length != 0) {
+            //     const res = values.languages.map(async (language) => {
+            //         if (language != undefined && language.languageName.length != 0) {
 
+            //             const resLanguage = await axiosIntance.post("http://127.0.0.1:8000/job/language/", {
+            //                 language: language.languageName[0],
+            //                 read: language.read,
+            //                 write: language.write,
+            //                 speak: language.speak,
+            //                 candidate: resCand.data.id
+            //             })
+            //             console.log("Response language created:", resLanguage)
+            //         }
 
-                })
-
-
-            }
-
-
-            if (values.demoLocation.length != 0) {
-                const res = values.demoLocation.map(async (location) => {
-
-                    const resPreference = await axiosIntance.post("http://127.0.0.1:8000/job/preference/", {
-                        prefer_location: location,
-                        notice_period: values.noticePeriod,
-                        expected_ctc: values.expectedCTC,
-                        current_ctc: values.currentCTC,
-                        department: values.department,
-                        candidate: resCand.data.id
-                    })
-                    console.log("Response preferences created:", resPreference)
+            //     })
 
 
-                })
+            // }
 
 
-            }
+
+            // if (values.technologies.length != 0) {
+            //     const res = values.technologies.map(async (technology) => {
+            //         if (technology != undefined && technology.technologyName.length != 0) {
+
+            //             const resTechnology = await axiosIntance.post("http://127.0.0.1:8000/job/technology/", {
+            //                 technology: technology.technologyName[0],
+            //                 ranting: technology.rating,
+            //                 candidate: resCand.data.id
+            //             })
+            //             console.log("Response technology created:", resTechnology)
+            //         }
+
+            //     })
+
+
+            // }
+
+
+
+
+            // if (values.references.length != 0) {
+            //     const res = values.references.map(async (reference) => {
+
+            //         const resReference = await axiosIntance.post("http://127.0.0.1:8000/job/reference/", {
+            //             refe_name: reference.name,
+            //             refe_contact_no: reference.contactNo,
+            //             refe_relation: reference.relation,
+            //             candidate: resCand.data.id
+            //         })
+            //         console.log("Response relation created:", resReference)
+
+
+            //     })
+
+
+            // }
+
+
+            // if (values.demoLocation.length != 0) {
+            //     const res = values.demoLocation.map(async (location) => {
+
+            //         const resPreference = await axiosIntance.post("http://127.0.0.1:8000/job/preference/", {
+            //             prefer_location: location,
+            //             notice_period: values.noticePeriod,
+            //             expected_ctc: values.expectedCTC,
+            //             current_ctc: values.currentCTC,
+            //             department: values.department,
+            //             candidate: resCand.data.id
+            //         })
+            //         console.log("Response preferences created:", resPreference)
+
+
+            //     })
+
+
+            // }
 
             alert("SUCCESSFULLY CREATED!!!!")
             navigate("/show-candidate/")
@@ -1324,6 +1361,7 @@ const InputForm = () => {
 
                                                     Course Name : <Field as="select" name={`academics.${index}.courseName`}>
                                                         <option selected hidden>Select course</option>
+                                                      
                                                         {
                                                             allCourses.map((course) => <option value={course.option_key}>{course.option_key}</option>)
                                                         }
