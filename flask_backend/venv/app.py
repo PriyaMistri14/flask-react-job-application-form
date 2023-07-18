@@ -29,6 +29,8 @@ from sqlalchemy import create_engine
 
 import pandas as pd
 
+import math
+
 Base = automap_base()
 
 engine = create_engine('postgresql://postgres:Dev%40123@localhost:5432/rest_job_app')
@@ -394,16 +396,19 @@ def create_candidate():
         print("In try req json method?::::", request.method)
 
 
-        print("In try req body?::::fname",json.loads(request.data.decode('utf-8')))
+        # print("In try req body?::::fname",request.data.decode('utf-8'))
 
-        # candidate = request.get_json()
-        candidate = json.loads(request.data.decode('utf-8'))
-        print(candidate)
+        candidate = request.get_json(force=True)
+        # candidate = json.loads(request.data.decode('utf-8'))
+        print("RRRRRRRR",candidate['fname'] )
+
+        
+
 
         cand_obj = Candidate(fname=candidate['fname'],
                          lname = candidate["lname"],
                          surname = candidate["surname"],
-                         contact_no = candidate["contact_no"],
+                         contact_no = candidate["phone"],
                          gender = candidate["gender"],
                          email = candidate["email"],
                          city = candidate["city"],
@@ -411,10 +416,13 @@ def create_candidate():
                          dob = candidate["dob"]
 
                          )
+        print("BEFORE::::", cand_obj)                 
         db.session.add(cand_obj)
         db.session.commit()
-        print("COMIIITEDDDD!!", cand_obj)
-        return make_response({"data":"heklloooool", "message":"Successfully created candidate"}, 200)
+        print("COMIIITEDDDD!!", cand_obj.id)
+        # data = json.dumps([{i:v for i, v in cand_obj.__dict__.items() } ]) 
+        print("AFTER::::", )        
+        return make_response({"data":cand_obj.id, "message":"Successfully created candidate"}, 200)
         # return f"Successfully created!! {cand_obj}"
     except:
         return make_response({"data":"", "message":"Error while creating candidate in backend"}, 200)    
@@ -424,37 +432,52 @@ def create_candidate():
 @app.route("/create_academic", methods=["POST"])
 @flask_praetorian.auth_required
 def create_academic():
-    academic = json.loads(request.data.decode('utf-8'))
-    acad_obj = Academic(course_name = academic['course_name'],
-                        name_of_board_university = academic["name_of_board_university"],
-                        passing_year = academic["passing_year"],
-                        percentage = academic["percentage"],
-                        candidate_id = academic["candidate_id"]
-                        )
+    print("Create academics is called!!!")
+    # academic = json.loads(request.data.decode('utf-8'))
+    try:
+        academic = request.get_json(force=True)
+        print("ACADEMIC:", academic['academic']['courseName'])
+        acad_obj = Academic(course_name = academic['academic']["courseName"],
+                            name_of_board_university = academic['academic']["nameOfBoardUniversity"],
+                            passing_year = academic['academic']["passingYear"],
+                            percentage = academic['academic']["percentage"],
+                            candidate_id = academic["candidate"]
+                            )
 
-    db.session.add(acad_obj)
-    db.session.commit()
+        db.session.add(acad_obj)
+        db.session.commit()
+        return make_response({"data":acad_obj.id, "message":"Successfully created candidate"}, 200)
 
-    return f"Academic created successfully !! {acad_obj} "
+    except:
+         return make_response({"data":"Error", "message":"Error while creating academic in backend"}, 200)    
 
 
 
 @app.route("/create_experience", methods=["POST"])
 @flask_praetorian.auth_required
 def create_experience():
-    experience = json.loads(request.data.decode('utf-8'))
+    print("Create experience is called!!!!!!!!!")
+        
+    try:
+        experience = request.get_json(force=True)
+        print("EXPERIENCE:", experience['experience']['companyName'])
 
-    expe_obj = Experience(company_name = experience["company_name"],
-                          designation = experience["designation"],
-                          from_date = experience["from_date"],
-                          to_date = experience["to_date"],
-                          candidate_id = experience["candidate_id"]
+        expe_obj = Experience(company_name = experience['experience']["companyName"],
+                          designation = experience['experience']["designation"],
+                          from_date = experience['experience']["from"],
+                          to_date = experience['experience']["to"],
+                          candidate_id = experience["candidate"]
                           )
 
-    db.session.add(expe_obj)
-    db.session.commit()
+        db.session.add(expe_obj)
+        db.session.commit()
 
-    return f"Experience created successfully !! {expe_obj} "
+        return make_response({"data":expe_obj.id, "message":"Successfully created candidate"}, 200)
+
+    except:
+        return make_response({"data":"Error", "message":"Error while creating experience in backend"}, 200)    
+
+
 
 
 
@@ -462,58 +485,86 @@ def create_experience():
 @app.route("/create_language", methods=["POST"])
 @flask_praetorian.auth_required
 def create_language():
-    language = json.loads(request.data.decode('utf-8'))
 
-    lang_obj = Language(language= language["language"],
-                        read = language['read'],
-                        write = language["write"],
-                        speak = language['speak'],
-                        candidate_id=language["candidate_id"]
+    try:
+
+        language = request.get_json(force=True)
+        print("LANGUAGE:", language['language']['languageName'][0], "LANGUAGE WRITE:",language['language']["write"])
+
+        lang_obj = Language(language= language['language']["languageName"][0],
+                        read = language['language']['read'],
+                        write = language['language']["write"],
+                        speak = language['language']['speak'],
+                        candidate_id=language["candidate"]
                         )
 
 
-    db.session.add(lang_obj)
-    db.session.commit()
+        db.session.add(lang_obj)
+        db.session.commit()
 
-    return f"Language  created successfully !! {lang_obj} "
+        
+        return make_response({"data":lang_obj.id, "message":"Successfully created candidate"}, 200)
+
+    except:
+        return make_response({"data":"Error", "message":"Error while creating language in backend"}, 200)    
+
 
 
 
 @app.route("/create_technology", methods=["POST"])
 @flask_praetorian.auth_required
 def create_techmology():
-    technology = json.loads(request.data.decode('utf-8'))
+     try:
 
-    tech_obj = Technology(technology = technology["technology"],
-                          ranting = technology["ranting"],
-                          candidate_id=technology["candidate_id"]
+        technology = request.get_json(force=True)
+        print("TECHNOLOGY:", technology['technology']['technologyName'][0])
+
+
+        tech_obj = Technology(technology = technology['technology']["technologyName"][0],
+                          ranting = technology['technology']["rating"],
+                          candidate_id=technology["candidate"]
                           )
 
-    db.session.add(tech_obj)
+        db.session.add(tech_obj)
 
-    db.session.commit()
+        db.session.commit()
 
 
-    return f"Technology created successfully !!! {tech_obj}"
+        return make_response({"data":tech_obj.id, "message":"Successfully created candidate"}, 200)
+
+     except:
+        return make_response({"data":"Error", "message":"Error while creating technology in backend"}, 200)    
+
 
 
 
 @app.route("/create_reference", methods= ["POST"])
 @flask_praetorian.auth_required
 def create_reference():
-    reference = json.loads(request.data.decode('utf-8'))
 
-    refe_obj = Reference(refe_name = reference["refe_name"],
-                         refe_contact_no = reference["refe_contact_no"],
-                         refe_relation = reference["refe_relation"],
-                         candidate_id=reference["candidate_id"]
+     try:
+
+        reference = request.get_json(force=True)
+        print("REFERENCE:", reference['reference']['name'])
+
+   
+
+        refe_obj = Reference(refe_name = reference['reference']["name"],
+                         refe_contact_no = reference['reference']["contactNo"],
+                         refe_relation = reference['reference']["relation"],
+                         candidate_id=reference["candidate"]
                          )
 
 
-    db.session.add(refe_obj)
-    db.session.commit()
+        db.session.add(refe_obj)
+        db.session.commit()
 
-    return f"Reference created successfully !!! {refe_obj}"
+        return make_response({"data":refe_obj.id, "message":"Successfully created candidate"}, 200)
+
+     except:
+        return make_response({"data":"Error", "message":"Error while creating reference in backend"}, 200)    
+
+
 
 
 
@@ -521,21 +572,32 @@ def create_reference():
 @app.route("/create_preference", methods=["POST"])
 @flask_praetorian.auth_required
 def create_preference():
-    preference = json.loads(request.data.decode('utf-8'))
 
-    pref_obj = Preference(prefer_location = preference["prefer_location"],
-                          notice_period = preference["notice_period"],
-                          expected_ctc = preference["expected_ctc"],
-                          current_ctc = preference["current_ctc"],
+     try:
+
+        preference = request.get_json(force=True)
+        print("PREFERENCE:", preference['location'])
+    
+
+        pref_obj = Preference(prefer_location = preference['location'],
+                          notice_period = preference["noticePeriod"],
+                          expected_ctc = preference["expectedCTC"],
+                          current_ctc = preference["currentCTC"],
                           department = preference["department"],
-                          candidate_id = preference["candidate_id"]
+                          candidate_id = preference["candidate"]
 
                           )
 
-    db.session.add(pref_obj)
-    db.session.commit()
+        db.session.add(pref_obj)
+        db.session.commit()
 
-    return f"Preference created successfully!!! {pref_obj}"
+        return make_response({"data":pref_obj.id, "message":"Successfully created candidate"}, 200)
+
+     except:
+        return make_response({"data":"Error", "message":"Error while creating preference in backend"}, 200)    
+
+
+
 
 
 
@@ -552,7 +614,7 @@ def show_candidates():
     cand = []
 
     # print("all_candidates:::", all_candidates[0][0].fname, "json::::", cand)
-
+     
     for candidate in all_candidates:
         # print("candidate[0].academics:::::::::::::::::::::::::::::::::::::::", candidate[0].academics)
         c = {
@@ -599,10 +661,96 @@ def show_candidates():
 
         }
         cand.append(c)
-        print("all_candidates:::", all_candidates,"json::::", cand)
+        # print("all_candidates:::", all_candidates,"json::::", cand)
 
 
     return cand
+
+
+
+
+
+# ..........................................pagination.........................
+@app.route("/pagination/", methods=["GET"])
+def pagination():
+    per_page = 10
+    page = request.args.get("page", 1)
+    order = request.args.get("order")
+    sort = request.args.get("sort")
+    print("ASSASSASAS:   ", order, sort, page)
+    pages= int(page)
+    if order and sort and sort == 'fname':
+        paginated_data = db.paginate(Candidate.query.order_by(Candidate.fname), page=pages, per_page=per_page) if order == 'asc' else db.paginate(Candidate.query.order_by(Candidate.fname.desc()), page=pages, per_page=per_page)
+
+        print("Paginated_data::", paginated_data.total)
+
+    elif order and sort and sort == 'lname':
+        paginated_data = db.paginate(Candidate.query.order_by(Candidate.lname), page=pages, per_page=per_page) if order == 'asc' else db.paginate(Candidate.query.order_by(Candidate.lname.desc()), page=pages, per_page=per_page)
+
+        print("Paginated_data::", paginated_data.total)
+    
+    elif order and sort and sort == 'surname':
+        paginated_data = db.paginate(Candidate.query.order_by(Candidate.surname), page=pages, per_page=per_page) if order == 'asc' else db.paginate(Candidate.query.order_by(Candidate.surname.desc()), page=pages, per_page=per_page)
+
+        print("Paginated_data::", paginated_data.total)
+
+    elif order and sort and sort == 'contact_no':
+        paginated_data = db.paginate(Candidate.query.order_by(Candidate.contact_no), page=pages, per_page=per_page) if order == 'asc' else db.paginate(Candidate.query.order_by(Candidate.contact_no.desc()), page=pages, per_page=per_page)
+
+        print("Paginated_data::", paginated_data.total)
+
+    elif order and sort and sort == 'email':
+        paginated_data = db.paginate(Candidate.query.order_by(Candidate.email), page=pages, per_page=per_page) if order == 'asc' else db.paginate(Candidate.query.order_by(Candidate.email.desc()), page=pages, per_page=per_page)
+
+        print("Paginated_data::", paginated_data.total)
+
+
+    elif order and sort and sort == 'state':
+        paginated_data = db.paginate(Candidate.query.order_by(Candidate.state), page=pages, per_page=per_page) if order == 'asc' else db.paginate(Candidate.query.order_by(Candidate.state.desc()), page=pages, per_page=per_page)
+
+        print("Paginated_data::", paginated_data.total)
+
+    elif order and sort and sort == 'city':
+        paginated_data = db.paginate(Candidate.query.order_by(Candidate.city), page=pages, per_page=per_page) if order == 'asc' else db.paginate(Candidate.query.order_by(Candidate.city.desc()), page=pages, per_page=per_page)
+
+        print("Paginated_data::", paginated_data.total)
+
+    
+
+    else:
+
+        paginated_data = db.paginate(Candidate.query.order_by(Candidate.id), page=pages, per_page=per_page)
+        print("Paginated_data::", paginated_data.total)
+
+    cand = []
+    for i in paginated_data:
+        print("Pageeee: ", i)
+        c = {
+            "id" : i.id,
+            'fname': i.fname,
+            'lname': i.lname,
+            'surname' : i.surname,
+            'contact_no': i.contact_no,
+            'city': i.city,
+            'state': i.state,
+            'gender' : i.gender,
+            'email' : i.email,
+            'dob': i.dob,
+        }
+        cand.append(c)
+    no_of_pages = math.ceil(paginated_data.total/per_page)
+    data ={
+        "data":cand,
+        "total":paginated_data.total,
+        "no_of_pages":no_of_pages
+    } 
+
+    return make_response({"data":data, "message": "Success pagination"}, 200)
+
+
+
+
+
 
 
 

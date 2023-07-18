@@ -111,30 +111,30 @@ const InputForm = () => {
 
 
     const initialValuesForCreate = {
-        fname: "abc",
-        lname: "gfgdfg",
-        surname: "fgdfg",
-        email: "a@gmail.com",
-        phone: "1234567890",
-        gender: "Female",
-        state: "Gujarat",
+        fname: "",
+        lname: "",
+        surname: "",
+        email: "",
+        phone: "",
+        gender: "",
+        state: "",
         cities: [],
         city: "",
         dob: "",
 
         academics: [
             {
-                courseName: "fdg",
-                nameOfBoardUniversity: "dfgdf",
-                passingYear: "2014",
-                percentage: "90",
+                courseName: "",
+                nameOfBoardUniversity: "",
+                passingYear: "",
+                percentage: "",
             }
         ],
 
         experiences: [
             {
-                companyName: "dfdsg",
-                designation: "hr",
+                companyName: "",
+                designation: "",
                 from: "",
                 to: ""
             }
@@ -159,21 +159,21 @@ const InputForm = () => {
 
         references: [
             {
-                name: "hgfhgf",
-                contactNo: "1212121212",
-                relation: "father"
+                name: "",
+                contactNo: "",
+                relation: ""
             },
             {
-                name: "sdfsdf",
-                contactNo: "5656565656",
-                relation: "mother"
+                name: "",
+                contactNo: "",
+                relation: ""
             }
         ],
 
 
-        noticePeriod: "1",
-        expectedCTC: "1",
-        currentCTC: "1",
+        noticePeriod: "",
+        expectedCTC: "",
+        currentCTC: "",
         department: "",
 
 
@@ -188,171 +188,216 @@ const InputForm = () => {
     const createCandidate = async (values) => {
         try {
 
-            // const resCand = await axiosIntance.post("http://127.0.0.1:5000/create_candidate", {
-            //     fname: values.fname,
-            //     lname: values.lname,
-            //     surname: values.surname,
-            //     email: values.email,
-            //     contact_no: values.phone,
-            //     city: values.city,
-            //     state: values.state,
-            //     gender: values.gender,
-            //     dob: values.dob
-            // })
- 
-            const fname= values.fname
-            const lname = values.lname
-            const surname = values.surname
 
             const resCand = await authFetch("http://127.0.0.1:5000/create_candidate",{
                 method:'POST',
-                body:{fname, lname, surname},
-                // fname: values.fname,
-                // lname: values.lname,
-                // surname: values.surname,
-                // email: values.email,
-                // contact_no: values.phone,
-                // city: values.city,
-                // state: values.state,
-                // gender: values.gender,
-                // dob: values.dob
-                // method:"POST",
-                // body:{
-                //     "fname": values.fname,
-                //     "lname": values.lname,
-                //     "surname": values.surname,
-                //     "email": values.email,
-                //     "contact_no": values.phone,
-                //     "city": values.city,
-                //     "state": values.state,
-                //     "gender": values.gender,
-                //     "dob": values.dob
-
-                // }
+                headers : {
+                    'Content-Type':'application/json',                   
+                },
+                body:JSON.stringify(values),
+            
             })
            
-            const res = await resCand.json()
+            const res_cand = await resCand.json()
 
-            console.log("Response candidate created:", res.data, res.message)
-
-
-            // if (values.academics.length != 0) {
-            //     const res = values.academics.map(async (academic) => {
-
-            //         const resAcademics = await axiosIntance.post("http://127.0.0.1:8000/job/academic/", {
-            //             course_name: academic.courseName,
-            //             name_of_board_university: academic.nameOfBoardUniversity,
-            //             passing_year: academic.passingYear,
-            //             percentage: academic.percentage,
-            //             candidate: resCand.data.id
-
-            //         })
-
-            //         console.log("Response academic created:", resAcademics)
-            //     })
+            console.log("Response candidate created:", res_cand.data)
 
 
-            // }
+            if (values.academics.length != 0) {
+                const ress = values.academics.map(async (academic) => {
+                 
+                    const obj = {
+                        academic:academic,
+                        candidate: res_cand.data
+
+                    }
+                    console.log("in academic:::", obj)
+                    const resAcad = await authFetch("http://127.0.0.1:5000/create_academic",{
+                        method:'POST',
+                        headers : {
+                            'Content-Type':'application/json',                   
+                        },
+                        body:JSON.stringify(obj),
+                    
+                    })
+                   console.log("after fetch call", resAcad)
+                    const res = await resAcad.json()
+        
+                    console.log("Response academic created:", res.data)
+        
+                })
 
 
-            // if (values.experiences.length != 0) {
-            //     const res = values.experiences.map(async (experience) => {
-
-            //         const resExperience = await axiosIntance.post("http://127.0.0.1:8000/job/experience/", {
-            //             company_name: experience.companyName,
-            //             designation: experience.designation,
-            //             from_date: experience.from,
-            //             to_date: experience.to,
-            //             candidate: resCand.data.id
-            //         })
-
-            //         console.log("Response experience created:", resExperience)
-            //     })
+            }
 
 
-            // }
+            if (values.experiences.length != 0) {
+                const res = values.experiences.map(async (experience) => {
+
+                    const obj = {
+                        experience:experience,
+                        candidate: res_cand.data
+
+                    }
+                    console.log("in experience:::", obj)
+                    const resExpe = await authFetch("http://127.0.0.1:5000/create_experience",{
+                        method:'POST',
+                        headers : {
+                            'Content-Type':'application/json',                   
+                        },
+                        body:JSON.stringify(obj),
+                    
+                    })
+                   console.log("after fetch call", resExpe)
+                    const res = await resExpe.json()
+        
+                    console.log("Response experience created:", res.data)
 
 
+                   
+                })
 
 
-
-            // if (values.languages.length != 0) {
-            //     const res = values.languages.map(async (language) => {
-            //         if (language != undefined && language.languageName.length != 0) {
-
-            //             const resLanguage = await axiosIntance.post("http://127.0.0.1:8000/job/language/", {
-            //                 language: language.languageName[0],
-            //                 read: language.read,
-            //                 write: language.write,
-            //                 speak: language.speak,
-            //                 candidate: resCand.data.id
-            //             })
-            //             console.log("Response language created:", resLanguage)
-            //         }
-
-            //     })
-
-
-            // }
-
-
-
-            // if (values.technologies.length != 0) {
-            //     const res = values.technologies.map(async (technology) => {
-            //         if (technology != undefined && technology.technologyName.length != 0) {
-
-            //             const resTechnology = await axiosIntance.post("http://127.0.0.1:8000/job/technology/", {
-            //                 technology: technology.technologyName[0],
-            //                 ranting: technology.rating,
-            //                 candidate: resCand.data.id
-            //             })
-            //             console.log("Response technology created:", resTechnology)
-            //         }
-
-            //     })
-
-
-            // }
+            }
 
 
 
 
-            // if (values.references.length != 0) {
-            //     const res = values.references.map(async (reference) => {
 
-            //         const resReference = await axiosIntance.post("http://127.0.0.1:8000/job/reference/", {
-            //             refe_name: reference.name,
-            //             refe_contact_no: reference.contactNo,
-            //             refe_relation: reference.relation,
-            //             candidate: resCand.data.id
-            //         })
-            //         console.log("Response relation created:", resReference)
+            if (values.languages.length != 0) {
+                const res = values.languages.map(async (language) => {
+                    if (language != undefined && language.languageName.length != 0) {
 
 
-            //     })
+                        const obj = {
+                            language:language,
+                            candidate: res_cand.data
+    
+                        }
+                        console.log("in language:::", obj)
+                        const resLang = await authFetch("http://127.0.0.1:5000/create_language",{
+                            method:'POST',
+                            headers : {
+                                'Content-Type':'application/json',                   
+                            },
+                            body:JSON.stringify(obj),
+                        
+                        })
+                       console.log("after fetch call", resLang)
+                        const res = await resLang.json()
+            
+                        console.log("Response language created:", res.data)
+    
 
 
-            // }
+                    }
+
+                })
 
 
-            // if (values.demoLocation.length != 0) {
-            //     const res = values.demoLocation.map(async (location) => {
-
-            //         const resPreference = await axiosIntance.post("http://127.0.0.1:8000/job/preference/", {
-            //             prefer_location: location,
-            //             notice_period: values.noticePeriod,
-            //             expected_ctc: values.expectedCTC,
-            //             current_ctc: values.currentCTC,
-            //             department: values.department,
-            //             candidate: resCand.data.id
-            //         })
-            //         console.log("Response preferences created:", resPreference)
+            }
 
 
-            //     })
+
+            if (values.technologies.length != 0) {
+                const res = values.technologies.map(async (technology) => {
+                    if (technology != undefined && technology.technologyName.length != 0) {
 
 
-            // }
+                        const obj = {
+                            technology:technology,
+                            candidate: res_cand.data
+    
+                        }
+                        console.log("in technology:::", obj)
+                        const resTech = await authFetch("http://127.0.0.1:5000/create_technology",{
+                            method:'POST',
+                            headers : {
+                                'Content-Type':'application/json',                   
+                            },
+                            body:JSON.stringify(obj),
+                        
+                        })
+                       console.log("after fetch call", resTech)
+                        const res = await resTech.json()
+            
+                        console.log("Response technology created:", res.data)
+
+
+                      
+                    }
+
+                })
+
+
+            }
+
+
+
+
+            if (values.references.length != 0) {
+                const res = values.references.map(async (reference) => {
+
+
+
+                    const obj = {
+                        reference:reference,
+                        candidate: res_cand.data
+
+                    }
+                    console.log("in reference:::", obj)
+                    const resRefe = await authFetch("http://127.0.0.1:5000/create_reference",{
+                        method:'POST',
+                        headers : {
+                            'Content-Type':'application/json',                   
+                        },
+                        body:JSON.stringify(obj),
+                    
+                    })
+                   console.log("after fetch call", resRefe)
+                    const res = await resRefe.json()
+        
+                    console.log("Response reference created:", res.data)
+
+
+
+                })
+
+
+            }
+
+
+            if (values.demoLocation.length != 0) {
+                const res = values.demoLocation.map(async (location) => {
+
+
+                    const obj = {
+                        location:location,
+                        noticePeriod: values.noticePeriod,
+                        expectedCTC : values.expectedCTC,
+                        currentCTC : values.currentCTC,
+                        department: values.department,
+                        candidate: res_cand.data
+
+                    }
+                    console.log("in preference:::", obj)
+                    const resRefe = await authFetch("http://127.0.0.1:5000/create_preference",{
+                        method:'POST',
+                        headers : {
+                            'Content-Type':'application/json',                   
+                        },
+                        body:JSON.stringify(obj),
+                    
+                    })
+                   console.log("after fetch call", resRefe)
+                    const res = await resRefe.json()
+        
+                    console.log("Response preference created:", res.data)
+
+                })
+
+
+            }
 
             alert("SUCCESSFULLY CREATED!!!!")
             navigate("/show-candidate/")

@@ -10,6 +10,8 @@ import { useState, useEffect } from 'react'
 
 import { Link, useNavigate } from 'react-router-dom'
 
+import { authFetch } from '../../axiosApi'
+
 
 
 
@@ -18,9 +20,12 @@ function ShowCandidate() {
     const [candidates, setCandidates] = useState([])  // paginated data
     const [allCandidates, setAllCandidates] = useState([])
     const [filteredCandidate, setFilteredCandidate] = useState([])
-    const [no_of_pages, setNo_of_pages] = useState([])
+    const [no_of_pages, setNo_of_pages] = useState(1)
+    const [pageArr, setPageArr] = useState([])
     const [states, setStates] = useState([])
-    const [order , setOrder] = useState('asc')
+    const [order, setOrder] = useState('')
+    const [currentPage, setCurrentPage] = useState(1)
+    const [sort, setSort] = useState('id')
 
 
     const data_per_page = 5
@@ -98,13 +103,19 @@ function ShowCandidate() {
 
     const changePage = async (e) => {
         const page_no = e.target.name
-        console.log("]]]]]]]]]]]]", page_no);
+        console.log("]]]]]]]]]]]]", page_no, sort, order);
         try {
 
-            const p = await axiosIntance.get(`http://127.0.0.1:8000/job/pagination/?data_per_page=${data_per_page}&page=${page_no}/`)
-            console.log("PAGINATAED DATA AFTER PAGE CHANGE ::: ", p.data);
-            setCandidates(p.data)
-            setFilteredCandidate(p.data)
+            const paginated_data = await authFetch(`http://127.0.0.1:5000/pagination/?page=${page_no}&order=${order}&sort=${sort}`)
+
+            const res = await paginated_data.json()
+
+            console.log("Paginated_dataaaaa:  ", paginated_data, "rESSSSS:    ", res.data.data);
+
+            setCandidates(res.data.data)
+            setFilteredCandidate(res.data.data)
+            setCurrentPage(page_no)
+
 
         } catch (error) {
             console.log("Error", error);
@@ -116,7 +127,7 @@ function ShowCandidate() {
 
 
     const onSearchChangeHandler = (e) => {
-     
+
         const search = e.target.value
         const fCandidate = candidates.filter((candidate) => {
 
@@ -150,79 +161,128 @@ function ShowCandidate() {
 
 
 
-    const sorting = (e) => {
+    const sorting = async (e) => {
+        order == 'asc' ? setOrder("desc") : setOrder('asc')
         console.log("EEEE", e.target.getAttribute('value'));
+        console.log("ORDERRRRRRRRR:   ", order);
         const field = e.target.getAttribute('value')
         const arr = filteredCandidate
         switch (field) {
             case 'fname':
-                order == 'asc' ? 
-                arr.sort((a, b) => (a.fname.toLowerCase() > b.fname.toLowerCase()) ? 1 : -1)
-                : arr.sort((a, b) => (a.fname.toLowerCase() > b.fname.toLowerCase()) ? -1 : 1)
-                setCandidates([...arr])
-                setFilteredCandidate([...arr])               
-              
+                setSort('fname')
+                const paginated_data_fname = await authFetch(`http://127.0.0.1:5000/pagination/?page=1&order=${order}&sort=fname`)
+
+                const res_fname = await paginated_data_fname.json()
+        
+                console.log("Paginated_dataaaaa:  ", paginated_data_fname, "rESSSSS:    ", res_fname.data.data);
+        
+                setCandidates(res_fname.data.data)
+                setFilteredCandidate(res_fname.data.data)
+                setCurrentPage(1)
                 break
 
             case 'lname':
-                order == 'asc' ?
-                arr.sort((a, b) => (a.lname.toLowerCase() > b.lname.toLowerCase()) ? 1 : -1) :
-                arr.sort((a, b) => (a.lname.toLowerCase() > b.lname.toLowerCase()) ? -1 : 1)
-                setCandidates([...arr])
-                setFilteredCandidate([...arr])               
-                break
+                setSort('lname')
+                const paginated_data_lname = await authFetch(`http://127.0.0.1:5000/pagination/?page=1&order=${order}&sort=lname`)
 
+                const res_lname = await paginated_data_lname.json()
+        
+                console.log("Paginated_dataaaaa:  ", paginated_data_lname, "rESSSSS:    ", res_lname.data.data);
+        
+                setCandidates(res_lname.data.data)
+                setFilteredCandidate(res_lname.data.data)
+                setCurrentPage(1)
+                break
 
             case 'surname':
-                order == 'asc' ? 
-                arr.sort((a, b) => (a.surname.toLowerCase() > b.surname.toLowerCase()) ? 1 : -1) :
-                arr.sort((a, b) => (a.surname.toLowerCase() > b.surname.toLowerCase()) ? -1 : 1)
-                setCandidates([...arr])
-                setFilteredCandidate([...arr])               
+                setSort('surname')
+                const paginated_data_surname = await authFetch(`http://127.0.0.1:5000/pagination/?page=1&order=${order}&sort=surname`)
+
+                const res_surname = await paginated_data_surname.json()
+        
+                console.log("Paginated_dataaaaa:  ", paginated_data_surname, "rESSSSS:    ", res_surname.data.data);
+        
+                setCandidates(res_surname.data.data)
+                setFilteredCandidate(res_surname.data.data)
+                setCurrentPage(1)
                 break
 
-             
+
             case 'contact_no':
-                order == 'asc' ? 
-                arr.sort((a, b) => (a.contact_no > b.contact_no) ? 1 : -1) :
-                arr.sort((a, b) => (a.contact_no > b.contact_no) ? -1 : 1)
-                setCandidates([...arr])
-                setFilteredCandidate([...arr])               
-                break   
+                setSort('contact_no')
+           
+                const paginated_data_contact_no = await authFetch(`http://127.0.0.1:5000/pagination/?page=1&order=${order}&sort=contact_no`)
+
+                const res_contact_no = await paginated_data_contact_no.json()
+        
+                console.log("Paginated_dataaaaa:  ", paginated_data_contact_no, "rESSSSS:    ", res_contact_no.data.data);
+        
+                setCandidates(res_contact_no.data.data)
+                setFilteredCandidate(res_contact_no.data.data)
+                setCurrentPage(1)
+
+                break
 
 
             case 'email':
-                order == 'asc' ? 
-                arr.sort((a, b) => (a.email.toLowerCase() > b.email.toLowerCase()) ? 1 : -1) : 
-                arr.sort((a, b) => (a.email.toLowerCase() > b.email.toLowerCase()) ? -1 : 1) 
-                setCandidates([...arr])
-                setFilteredCandidate([...arr])               
+                setSort('email')
+                const paginated_data_email = await authFetch(`http://127.0.0.1:5000/pagination/?page=1&order=${order}&sort=email`)
+
+                const res_email = await paginated_data_email.json()
+        
+                console.log("Paginated_dataaaaa:  ", paginated_data_email, "rESSSSS:    ", res_email.data.data);
+        
+                setCandidates(res_email.data.data)
+                setFilteredCandidate(res_email.data.data)
+                setCurrentPage(1)
+
                 break
 
 
             case 'state':
-                order == 'asc' ? 
-                arr.sort((a, b) => (a.state.toLowerCase() > b.state.toLowerCase()) ? 1 : -1) :
-                arr.sort((a, b) => (a.state.toLowerCase() > b.state.toLowerCase()) ? -1 : 1)
-                setCandidates([...arr])
-                setFilteredCandidate([...arr])               
+                setSort('state')
+                const paginated_data_state = await authFetch(`http://127.0.0.1:5000/pagination/?page=1&order=${order}&sort=state`)
+
+                const res_state = await paginated_data_state.json()
+        
+                console.log("Paginated_dataaaaa:  ", paginated_data_state, "rESSSSS:    ", res_state.data.data);
+        
+                setCandidates(res_state.data.data)
+                setFilteredCandidate(res_state.data.data)
+                setCurrentPage(1)
                 break
 
             case 'city':
-                order == 'asc' ? 
-                arr.sort((a, b) => (a.city.toLowerCase() > b.city.toLowerCase()) ? 1 : -1) : 
-                arr.sort((a, b) => (a.city.toLowerCase() > b.city.toLowerCase()) ? -1 : 1)
-                setCandidates([...arr])
-                setFilteredCandidate([...arr])               
+                setSort('city')
+                const paginated_data_city = await authFetch(`http://127.0.0.1:5000/pagination/?page=1&order=${order}&sort=city`)
+
+                const res_city = await paginated_data_city.json()
+        
+                console.log("Paginated_dataaaaa:  ", paginated_data_city, "rESSSSS:    ", res_city.data.data);
+        
+                setCandidates(res_city.data.data)
+                setFilteredCandidate(res_city.data.data)
+                setCurrentPage(1)
                 break
 
 
             default:
+                setSort('id')
                 console.log("No match found for sorting!!")
 
         }
+        // const paginated_data_fname = await authFetch(`http://127.0.0.1:5000/pagination/?page=1&order=${order}&sort=${sort}`)
 
-        order== 'asc' ? setOrder("desc") : setOrder('asc')
+        // const res_fname = await paginated_data_fname.json()
+
+        // console.log("Paginated_dataaaaa:  ", paginated_data_fname, "rESSSSS:    ", res_fname.data.data);
+
+        // setCandidates(res_fname.data.data)
+        // setFilteredCandidate(res_fname.data.data)
+        // setCurrentPage(1)
+        // order == 'asc' ? setOrder("desc") : setOrder('asc')
+
+
     }
 
 
@@ -231,33 +291,61 @@ function ShowCandidate() {
         console.log("use effect is called");
         (async () => {
             try {
-                if (localStorage.getItem("access_token") && axiosIntance.defaults.headers['Authorization']) {
+                if (localStorage.getItem("REACT_TOKEN_AUTH_KEY")) {
 
-                    const state = await axiosIntance.get("http://127.0.0.1:8000/job/state/")
-                    console.log("allState", state.data)
-                    setStates(state.data)
+                    try {
+                        const paginated_data = await authFetch("http://127.0.0.1:5000/pagination/?page=1")
+
+                        const res = await paginated_data.json()
+
+                        console.log("Paginated_dataaaaa:  ", paginated_data, "rESSSSS:    ", res.data.data);
+
+                        setCandidates(res.data.data)
+                        setFilteredCandidate(res.data.data)
+                        setNo_of_pages(res.data.no_of_pages)
+                        setOrder('asc')
 
 
-                    const res = await axiosIntance.get("http://127.0.0.1:8000/job/candidate_all/")
-                    console.log("resopnseeee:", res.data.length)
+                        var arr = []
 
-                    const total_data = res.data.length
-                    const n = Math.ceil(total_data / data_per_page)
-                    var arr = []
+                        for (var i = 0; i < res.data.no_of_pages; i++) {
+                            console.log("iii", i);
+                            arr.push(i + 1)
 
-                    for (var i = 0; i < n; i++) {
-                        console.log("iii", i);
-                        arr.push(i + 1)
+                        }
+                        setPageArr(arr)
 
+
+
+
+                    } catch (err) {
+                        console.log("Error", err)
                     }
-                    setNo_of_pages(arr)
+                    // const state = await axiosIntance.get("http://127.0.0.1:8000/job/state/")
+                    // console.log("allState", state.data)
+                    // setStates(state.data)
 
-                    setAllCandidates(res.data)
-                    // setFilteredCandidate(res.data)
-                    const p = await axiosIntance.get(`http://127.0.0.1:8000/job/pagination/?data_per_page=${data_per_page}&page=1/`)
-                    console.log("PAGINATAED DATA ::: ", p.data, "no of pages::", no_of_pages);
-                    setCandidates(p.data)
-                    setFilteredCandidate(p.data)
+
+                    // const res = await axiosIntance.get("http://127.0.0.1:8000/job/candidate_all/")
+                    // console.log("resopnseeee:", res.data.length)
+
+                    // const total_data = res.data.length
+                    // const n = Math.ceil(total_data / data_per_page)
+                    // var arr = []
+
+                    // for (var i = 0; i < n; i++) {
+                    //     console.log("iii", i);
+                    //     arr.push(i + 1)
+
+                    // }
+                    // setNo_of_pages(arr)
+
+                    // setAllCandidates(res.data)
+                    // // setFilteredCandidate(res.data)
+                    // const p = await axiosIntance.get(`http://127.0.0.1:8000/job/pagination/?data_per_page=${data_per_page}&page=1/`)
+                    // console.log("PAGINATAED DATA ::: ", p.data, "no of pages::", no_of_pages);
+                    // setCandidates(p.data)
+                    // setFilteredCandidate(p.data)
                 }
                 else {
                     goToLogin()
@@ -272,6 +360,7 @@ function ShowCandidate() {
     }, [])
 
     console.log("no of pages:::::", no_of_pages);
+    console.log("candidatesssss:  ", candidates, ";;;", filteredCandidate, "::::no of pages", no_of_pages, "pageArr::", pageArr);
 
     return (
         <div><br /><br />
@@ -342,10 +431,11 @@ function ShowCandidate() {
                 }
             </table><br /><br />
             <div className='page-numbers'>
-            {
-                no_of_pages.map(page => <a className='page' onClick={(e) => changePage(e)} name={page} >{page}</a>)
+                {
+                    pageArr.map(page => currentPage == page ? <a className='page' onClick={(e) => changePage(e)} name={page} >{page}</a>
+                        : <a style={{ color: 'red' }} className='page' onClick={(e) => changePage(e)} name={page} >{page}</a>)
 
-            }
+                }
             </div>
 
             <br /> </div>
