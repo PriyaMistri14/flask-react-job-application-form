@@ -8,11 +8,16 @@ import * as Yup from "yup"
 import React, { useEffect, useState } from 'react'
 import axiosIntance from '../../axiosApi'
 
-import { useNavigate } from 'react-router-dom'
+import { json, useNavigate } from 'react-router-dom'
 
 import { useParams } from 'react-router-dom'
 
 import { useAuth, authFetch } from '../../axiosApi'
+
+
+import { format, parseISO } from 'date-fns'
+
+
 
 
 const course = await axiosIntance.get("http://127.0.0.1:5000/select_all/1")
@@ -41,7 +46,7 @@ const allStates = state.data.data
 
 
 const InputForm = () => {
-    
+
 
 
     var isCreate = true
@@ -51,22 +56,19 @@ const InputForm = () => {
 
     const navigate = useNavigate()
     const { candidate_id } = useParams()
+    console.log("CANDIADTE IDDDDDDD:    ", candidate_id);
     candidate_id ? isCreate = false : isCreate = true
 
     const [logged] = useAuth()
 
-  
+
 
 
     useEffect(() => {
-        // if (!(localStorage.getItem("access_token") && axiosIntance.defaults.headers['Authorization'])) {
-        //     navigate("/login/")
-
-        // }
-       if (!localStorage.getItem("REACT_TOKEN_AUTH_KEY"))
-       {
-        navigate("/login/")
-       }
+       
+        if (!localStorage.getItem("REACT_TOKEN_AUTH_KEY")) {
+            navigate("/login/")
+        }
 
     }, [])
 
@@ -189,15 +191,15 @@ const InputForm = () => {
         try {
 
 
-            const resCand = await authFetch("http://127.0.0.1:5000/create_candidate",{
-                method:'POST',
-                headers : {
-                    'Content-Type':'application/json',                   
+            const resCand = await authFetch("http://127.0.0.1:5000/create_candidate", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
                 },
-                body:JSON.stringify(values),
-            
+                body: JSON.stringify(values),
+
             })
-           
+
             const res_cand = await resCand.json()
 
             console.log("Response candidate created:", res_cand.data)
@@ -205,26 +207,26 @@ const InputForm = () => {
 
             if (values.academics.length != 0) {
                 const ress = values.academics.map(async (academic) => {
-                 
+
                     const obj = {
-                        academic:academic,
+                        academic: academic,
                         candidate: res_cand.data
 
                     }
                     console.log("in academic:::", obj)
-                    const resAcad = await authFetch("http://127.0.0.1:5000/create_academic",{
-                        method:'POST',
-                        headers : {
-                            'Content-Type':'application/json',                   
+                    const resAcad = await authFetch("http://127.0.0.1:5000/create_academic", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
                         },
-                        body:JSON.stringify(obj),
-                    
+                        body: JSON.stringify(obj),
+
                     })
-                   console.log("after fetch call", resAcad)
+                    console.log("after fetch call", resAcad)
                     const res = await resAcad.json()
-        
+
                     console.log("Response academic created:", res.data)
-        
+
                 })
 
 
@@ -235,26 +237,26 @@ const InputForm = () => {
                 const res = values.experiences.map(async (experience) => {
 
                     const obj = {
-                        experience:experience,
+                        experience: experience,
                         candidate: res_cand.data
 
                     }
                     console.log("in experience:::", obj)
-                    const resExpe = await authFetch("http://127.0.0.1:5000/create_experience",{
-                        method:'POST',
-                        headers : {
-                            'Content-Type':'application/json',                   
+                    const resExpe = await authFetch("http://127.0.0.1:5000/create_experience", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
                         },
-                        body:JSON.stringify(obj),
-                    
+                        body: JSON.stringify(obj),
+
                     })
-                   console.log("after fetch call", resExpe)
+                    console.log("after fetch call", resExpe)
                     const res = await resExpe.json()
-        
+
                     console.log("Response experience created:", res.data)
 
 
-                   
+
                 })
 
 
@@ -270,24 +272,24 @@ const InputForm = () => {
 
 
                         const obj = {
-                            language:language,
+                            language: language,
                             candidate: res_cand.data
-    
+
                         }
                         console.log("in language:::", obj)
-                        const resLang = await authFetch("http://127.0.0.1:5000/create_language",{
-                            method:'POST',
-                            headers : {
-                                'Content-Type':'application/json',                   
+                        const resLang = await authFetch("http://127.0.0.1:5000/create_language", {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
                             },
-                            body:JSON.stringify(obj),
-                        
+                            body: JSON.stringify(obj),
+
                         })
-                       console.log("after fetch call", resLang)
+                        console.log("after fetch call", resLang)
                         const res = await resLang.json()
-            
+
                         console.log("Response language created:", res.data)
-    
+
 
 
                     }
@@ -305,26 +307,26 @@ const InputForm = () => {
 
 
                         const obj = {
-                            technology:technology,
+                            technology: technology,
                             candidate: res_cand.data
-    
+
                         }
                         console.log("in technology:::", obj)
-                        const resTech = await authFetch("http://127.0.0.1:5000/create_technology",{
-                            method:'POST',
-                            headers : {
-                                'Content-Type':'application/json',                   
+                        const resTech = await authFetch("http://127.0.0.1:5000/create_technology", {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
                             },
-                            body:JSON.stringify(obj),
-                        
+                            body: JSON.stringify(obj),
+
                         })
-                       console.log("after fetch call", resTech)
+                        console.log("after fetch call", resTech)
                         const res = await resTech.json()
-            
+
                         console.log("Response technology created:", res.data)
 
 
-                      
+
                     }
 
                 })
@@ -341,22 +343,22 @@ const InputForm = () => {
 
 
                     const obj = {
-                        reference:reference,
+                        reference: reference,
                         candidate: res_cand.data
 
                     }
                     console.log("in reference:::", obj)
-                    const resRefe = await authFetch("http://127.0.0.1:5000/create_reference",{
-                        method:'POST',
-                        headers : {
-                            'Content-Type':'application/json',                   
+                    const resRefe = await authFetch("http://127.0.0.1:5000/create_reference", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
                         },
-                        body:JSON.stringify(obj),
-                    
+                        body: JSON.stringify(obj),
+
                     })
-                   console.log("after fetch call", resRefe)
+                    console.log("after fetch call", resRefe)
                     const res = await resRefe.json()
-        
+
                     console.log("Response reference created:", res.data)
 
 
@@ -372,26 +374,26 @@ const InputForm = () => {
 
 
                     const obj = {
-                        location:location,
+                        location: location,
                         noticePeriod: values.noticePeriod,
-                        expectedCTC : values.expectedCTC,
-                        currentCTC : values.currentCTC,
+                        expectedCTC: values.expectedCTC,
+                        currentCTC: values.currentCTC,
                         department: values.department,
                         candidate: res_cand.data
 
                     }
                     console.log("in preference:::", obj)
-                    const resRefe = await authFetch("http://127.0.0.1:5000/create_preference",{
-                        method:'POST',
-                        headers : {
-                            'Content-Type':'application/json',                   
+                    const resRefe = await authFetch("http://127.0.0.1:5000/create_preference", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
                         },
-                        body:JSON.stringify(obj),
-                    
+                        body: JSON.stringify(obj),
+
                     })
-                   console.log("after fetch call", resRefe)
+                    console.log("after fetch call", resRefe)
                     const res = await resRefe.json()
-        
+
                     console.log("Response preference created:", res.data)
 
                 })
@@ -424,15 +426,17 @@ const InputForm = () => {
     const fetchCandidate = async () => {
 
         try {
-            const candidate_fetched = await axiosIntance.get(`http://127.0.0.1:8000/job/candidate_all/${candidate_id}/`)
+            const res = await authFetch(`http://127.0.0.1:5000/fetch_candidate/${candidate_id}`)
+            const candidate_fetched = await res.json()
 
             const candidate = candidate_fetched.data
+            console.log("RESponse candidate fetchedddd:   ", candidate_fetched, ";;;;;;", candidate);
             const state = candidate.state
             const cities = await getCity(state)
             console.log("Fetched cities:", cities);
-            const res = fetchAllData(candidate, cities)
-            console.log("RESPONSE:::", res);
-            return res
+            const result = fetchAllData(candidate, cities)
+            console.log("RESPONSE:::", result);
+            return result
 
         } catch (error) {
             console.log("Error while fetching candidate all", error)
@@ -471,11 +475,19 @@ const InputForm = () => {
 
         //backend experience data
         candidates.experiences != undefined && candidates.experiences.length != 0 && candidates.experiences.map((ex) => {
+            const a = new Date(ex.from_date)
+            var from = JSON.stringify(a).slice(1, 11)
+
+            const b = new Date(ex.to_date)
+            var to = JSON.stringify(b).slice(1, 11)
+
+            console.log("formated date:   ", from, to);
+
             const ex_obj = {
                 companyName: ex.company_name,
                 designation: ex.designation,
-                from: ex.from_date,
-                to: ex.to_date
+                from: from,
+                to: to
             }
 
             expe.push(ex_obj)
@@ -613,18 +625,17 @@ const InputForm = () => {
 
         try {
 
-            const resCand = await axiosIntance.put(`http://127.0.0.1:8000/job/candidate/${candidate_id}/`, {
-                fname: values.fname,
-                lname: values.lname,
-                surname: values.surname,
-                email: values.email,
-                contact_no: values.phone,
-                city: values.city,
-                state: values.state,
-                gender: values.gender,
-                dob: values.dob
+            const resCand = await authFetch(`http://127.0.0.1:5000/update_candidate/${candidate_id}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(values),
+
+
             })
-            console.log("Response candidate updated:", resCand)
+            const res = await resCand.json()
+            console.log("Response candidate updated:", res)
 
 
             //academics
@@ -635,16 +646,28 @@ const InputForm = () => {
                 if (values.academics.length === acde_ids.length) {
 
                     for (var i = 0; i < values.academics.length; i++) {
-                        const resAcademics = await axiosIntance.put(`http://127.0.0.1:8000/job/academic/${acde_ids[i]}/`, {
+
+                        const obj = {
                             course_name: values.academics[i].courseName,
                             name_of_board_university: values.academics[i].nameOfBoardUniversity,
                             passing_year: values.academics[i].passingYear,
                             percentage: values.academics[i].percentage,
                             candidate: candidate_id
+                        }
+
+
+                        const resAcademics = await authFetch(`http://127.0.0.1:5000/update_academics/${acde_ids[i]}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(obj),
+
 
                         })
 
-                        console.log("Response academic updated:", resAcademics)
+                        const res = await resAcademics.json()
+                        console.log("Response academic updated:", res)
                     }
                 }
 
@@ -653,30 +676,52 @@ const InputForm = () => {
                 else if (values.academics.length >= acde_ids.length) {
 
                     for (var i = 0; i < acde_ids.length; i++) {
-                        const resAcademics = await axiosIntance.put(`http://127.0.0.1:8000/job/academic/${acde_ids[i]}/`, {
+
+                        const obj = {
                             course_name: values.academics[i].courseName,
                             name_of_board_university: values.academics[i].nameOfBoardUniversity,
                             passing_year: values.academics[i].passingYear,
                             percentage: values.academics[i].percentage,
                             candidate: candidate_id
+                        }
+
+
+                        const resAcademics = await authFetch(`http://127.0.0.1:5000/update_academics/${acde_ids[i]}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(obj),
+
 
                         })
 
-                        console.log("Response academic updated:", resAcademics)
+                        const res = await resAcademics.json()
+                        console.log("Response academic updated:", res)
+
+
                     }
 
 
                     for (var i = acde_ids.length; i < values.academics.length; i++) {
-
-                        const resAcademics = await axiosIntance.post("http://127.0.0.1:8000/job/academic/", {
-                            course_name: values.academics[i].courseName,
-                            name_of_board_university: values.academics[i].nameOfBoardUniversity,
-                            passing_year: values.academics[i].passingYear,
-                            percentage: values.academics[i].percentage,
+                     
+                        const obj = {
+                            academic: values.academics[i],
                             candidate: candidate_id
-                        })
 
-                        console.log("Response academic created:", resAcademics)
+                        }
+                        console.log("in academic:::", obj)
+                        const resAcad = await authFetch("http://127.0.0.1:5000/create_academic", {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(obj),
+
+                        })
+                        const res = await resAcad.json()
+
+                        console.log("Response academic created:", res)
                     }
                 }
 
@@ -684,23 +729,38 @@ const InputForm = () => {
                 //update & delete
                 else if (values.academics.length <= acde_ids.length) {
                     for (var i = 0; i < values.academics.length; i++) {
-                        const resAcademics = await axiosIntance.put(`http://127.0.0.1:8000/job/academic/${acde_ids[i]}/`, {
+                        const obj = {
                             course_name: values.academics[i].courseName,
                             name_of_board_university: values.academics[i].nameOfBoardUniversity,
                             passing_year: values.academics[i].passingYear,
                             percentage: values.academics[i].percentage,
                             candidate: candidate_id
+                        }
+
+
+                        const resAcademics = await authFetch(`http://127.0.0.1:5000/update_academics/${acde_ids[i]}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(obj),
+
 
                         })
 
-                        console.log("Response academic updated:", resAcademics)
+                        const res = await resAcademics.json()
+                        console.log("Response academic updated:", res)
+
                     }
 
 
                     for (var i = values.academics.length; i < acde_ids.length; i++) {
-                        const resAcademics = await axiosIntance.delete(`http://127.0.0.1:8000/job/academic/${acde_ids[i]}/`)
+                        const res = await authFetch(`http://127.0.0.1:5000/delete_academic/${acde_ids[i]}`, {
+                            method: 'DELETE'
+                        })
+                        const data = await res.json()                      
 
-                        console.log("Response academic deleted:", resAcademics)
+                        console.log("Response academic deleted:", data)
                     }
 
                 }
@@ -712,18 +772,32 @@ const InputForm = () => {
             if (values.experiences.length != 0) {
 
                 if (values.experiences.length === expe_ids.length) {
-                    console.log("CAND IDDD AND EXPE IDD IN IF", candidate_id, expe_ids);
+                  
                     for (var i = 0; i < values.experiences.length; i++) {
-                        const resExpe = await axiosIntance.put(`http://127.0.0.1:8000/job/experience/${expe_ids[i]}/`, {
+                        
+                        const obj = {
                             company_name: values.experiences[i].companyName,
                             designation: values.experiences[i].designation,
                             from_date: values.experiences[i].from,
                             to_date: values.experiences[i].to,
                             candidate: candidate_id
 
+                        }
+
+                        const resExpe = await authFetch(`http://127.0.0.1:5000/update_experiences/${expe_ids[i]}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(obj),
+
+
+
                         })
 
-                        console.log("Response experince updated :", resExpe)
+                        const res = await resExpe.json()
+
+                        console.log("Response experince updated :", res)
                     }
                 }
 
@@ -731,31 +805,54 @@ const InputForm = () => {
                 else if (values.experiences.length >= expe_ids.length) {
 
                     for (var i = 0; i < expe_ids.length; i++) {
-                        const resExpe = await axiosIntance.put(`http://127.0.0.1:8000/job/experience/${expe_ids[i]}/`, {
+                        const obj = {
                             company_name: values.experiences[i].companyName,
                             designation: values.experiences[i].designation,
                             from_date: values.experiences[i].from,
                             to_date: values.experiences[i].to,
                             candidate: candidate_id
 
+                        }
+
+                        const resExpe = await authFetch(`http://127.0.0.1:5000/update_experiences/${expe_ids[i]}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(obj),
+
+
+
                         })
 
-                        console.log("Response experience updated:", resExpe)
+                        const res = await resExpe.json()
+
+
+                        console.log("Response experience updated:", res)
                     }
 
 
                     for (var i = expe_ids.length; i < values.experiences.length; i++) {
 
-                        const resExpe = await axiosIntance.post("http://127.0.0.1:8000/job/experience/", {
-                            company_name: values.experiences[i].companyName,
-                            designation: values.experiences[i].designation,
-                            from_date: values.experiences[i].from,
-                            to_date: values.experiences[i].to,
+                        const obj = {
+                            experience: values.experiences[i],
                             candidate: candidate_id
 
-                        })
+                        }
+                        console.log("in experience:::", obj)
+                        const resExpe = await authFetch("http://127.0.0.1:5000/create_experience", {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(obj),
 
-                        console.log("Response exxperience created:", resExpe)
+                        })
+                        console.log("after fetch call", resExpe)
+                        const res = await resExpe.json()
+
+                        console.log("Response experience created:", res.data)
+
 
                     }
 
@@ -765,22 +862,45 @@ const InputForm = () => {
 
                 else if (values.experiences.length <= expe_ids.length) {
                     for (var i = 0; i < values.experiences.length; i++) {
-                        const resExpe = await axiosIntance.put(`http://127.0.0.1:8000/job/experince/${expe_ids[i]}/`, {
+
+                        const obj = {
                             company_name: values.experiences[i].companyName,
                             designation: values.experiences[i].designation,
                             from_date: values.experiences[i].from,
                             to_date: values.experiences[i].to,
                             candidate: candidate_id
+
+                        }
+
+                        const resExpe = await authFetch(`http://127.0.0.1:5000/update_experiences/${expe_ids[i]}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(obj),
+
+
+
                         })
 
-                        console.log("Response experience updated :", resExpe)
+                        const res = await resExpe.json()
+
+
+                        console.log("Response experience updated:", res)
+
+                       
                     }
 
 
                     for (var i = values.experiences.length; i < expe_ids.length; i++) {
-                        const resExpe = await axiosIntance.delete(`http://127.0.0.1:8000/job/experience/${expe_ids[i]}/`)
 
-                        console.log("Response experience  deleted:", resExpe)
+                        const res = await authFetch(`http://127.0.0.1:5000/delete_experience/${expe_ids[i]}`, {
+                            method: 'DELETE'
+                        })
+                        const data = await res.json()
+                      
+
+                        console.log("Response experience  deleted:", data)
                     }
 
                 }
@@ -798,20 +918,37 @@ const InputForm = () => {
 
                         if (values.languages[i].languageName.length !== 0) {
 
-                            const resLang = await axiosIntance.put(`http://127.0.0.1:8000/job/language/${lang_ids[i]}/`, {
+                            const obj = {
                                 language: values.languages[i].languageName[0],
                                 read: values.languages[i].read,
                                 write: values.languages[i].write,
                                 speak: values.languages[i].speak,
                                 candidate: candidate_id
+
+                            }
+
+
+                            const resLang = await authFetch(`http://127.0.0.1:5000/update_languages/${lang_ids[i]}`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify(obj),
+
                             })
 
-                            console.log("Response language updated:", resLang)
+                            const res = await resLang.json()
+
+                            console.log("Response language updated:", res)
 
                         } else {
-                            const resLang = await axiosIntance.delete(`http://127.0.0.1:8000/job/language/${lang_ids[i]}/`)
+                            const res = await authFetch(`http://127.0.0.1:5000/delete_language/${lang_ids[i]}`, {
+                                method: 'DELETE'
+                            })
 
-                            console.log("Response language deleted :", resLang)
+                            const data = await res.json()
+                           
+                            console.log("Response language deleted :", data)
 
                         }
 
@@ -827,20 +964,40 @@ const InputForm = () => {
 
                         if (values.languages[i].languageName.length !== 0) {
 
-                            const resLang = await axiosIntance.put(`http://127.0.0.1:8000/job/language/${lang_ids[i]}/`, {
+                            const obj = {
                                 language: values.languages[i].languageName[0],
                                 read: values.languages[i].read,
                                 write: values.languages[i].write,
                                 speak: values.languages[i].speak,
                                 candidate: candidate_id
+
+                            }
+
+
+                            const resLang = await authFetch(`http://127.0.0.1:5000/update_languages/${lang_ids[i]}`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify(obj),
+
                             })
 
-                            console.log("Response language updated:", resLang)
+                            const res = await resLang.json()
+
+                            console.log("Response language updated:", res)
+
+
 
                         } else {
-                            const resLang = await axiosIntance.delete(`http://127.0.0.1:8000/job/language/${lang_ids[i]}/`)
 
-                            console.log("Response language deleted :", resLang)
+                            const res = await authFetch(`http://127.0.0.1:5000/delete_language/${lang_ids[i]}`, {
+                                method: 'DELETE'
+                            })
+
+                            const data = await res.json()
+                          
+                            console.log("Response language deleted :", data)
 
                         }
                     }
@@ -850,15 +1007,27 @@ const InputForm = () => {
 
                         if (values.languages[i].languageName.length !== 0) {
 
-                            const resLang = await axiosIntance.post("http://127.0.0.1:8000/job/language/", {
-                                language: values.languages[i].languageName[0],
-                                read: values.languages[i].read,
-                                write: values.languages[i].write,
-                                speak: values.languages[i].speak,
-                                candidate: candidate_id
-                            })
 
-                            console.log("Response language created:", resLang)
+                            const obj = {
+                                language: values.languages[i],
+                                candidate: candidate_id
+
+                            }
+                            console.log("in language:::", obj)
+                            const resLang = await authFetch("http://127.0.0.1:5000/create_language", {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify(obj),
+
+                            })
+                            console.log("after fetch call", resLang)
+                            const res = await resLang.json()
+
+                            console.log("Response language created:", res.data)
+
+
 
                         }
                     }
@@ -877,18 +1046,37 @@ const InputForm = () => {
 
                         if (values.technologies[i].technologyName.length !== 0) {
 
-                            const resTech = await axiosIntance.put(`http://127.0.0.1:8000/job/technology/${tech_ids[i]}/`, {
+                            const obj = {
                                 technology: values.technologies[i].technologyName[0],
                                 ranting: values.technologies[i].rating,
                                 candidate: candidate_id
+
+                            }
+
+                            const resTech = await authFetch(`http://127.0.0.1:5000/update_technologies/${tech_ids[i]}`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify(obj),
                             })
 
-                            console.log("Response technology updated:", resTech)
+                            const res = await resTech.json()
+                            console.log("Response technology updated:", res)
 
                         } else {
-                            const resTech = await axiosIntance.delete(`http://127.0.0.1:8000/job/technology/${tech_ids[i]}/`)
 
-                            console.log("Response technology deleted :", resTech)
+                            const res = await authFetch(`http://127.0.0.1:5000/delete_technology/${tech_ids[i]}`, {
+                                method: "DELETE"
+                            })
+
+                            const data = await res.json()
+                            console.log("DATATAT TECH:   ", data);
+
+
+                            // const resTech = await axiosIntance.delete(`http://127.0.0.1:8000/job/technology/${tech_ids[i]}/`)
+
+                            console.log("Response technology deleted :", data)
 
                         }
 
@@ -903,18 +1091,47 @@ const InputForm = () => {
 
                         if (values.technologies[i].technologyName.length !== 0) {
 
-                            const resTech = await axiosIntance.put(`http://127.0.0.1:8000/job/technology/${tech_ids[i]}/`, {
+                            const obj = {
                                 technology: values.technologies[i].technologyName[0],
                                 ranting: values.technologies[i].rating,
                                 candidate: candidate_id
+
+                            }
+
+                            const resTech = await authFetch(`http://127.0.0.1:5000/update_technologies/${tech_ids[i]}`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify(obj),
                             })
 
-                            console.log("Response technology updated:", resTech)
+                            const res = await resTech.json()
+                            console.log("Response technology updated:", res)
+
+
+
+                            // const resTech = await axiosIntance.put(`http://127.0.0.1:8000/job/technology/${tech_ids[i]}/`, {
+                            //     technology: values.technologies[i].technologyName[0],
+                            //     ranting: values.technologies[i].rating,
+                            //     candidate: candidate_id
+                            // })
+
+                            // console.log("Response technology updated:", resTech)
 
                         } else {
-                            const resTech = await axiosIntance.delete(`http://127.0.0.1:8000/job/technology/${tech_ids[i]}/`)
 
-                            console.log("Response technology deleted :", resTech)
+                            const res = await authFetch(`http://127.0.0.1:5000/delete_technology/${tech_ids[i]}`, {
+                                method: "DELETE"
+                            })
+
+                            const data = await res.json()
+                            console.log("DATATAT TECH:   ", data);
+
+
+                            // const resTech = await axiosIntance.delete(`http://127.0.0.1:8000/job/technology/${tech_ids[i]}/`)
+
+                            console.log("Response technology deleted :", data)
 
                         }
                     }
@@ -923,14 +1140,25 @@ const InputForm = () => {
                     for (var i = tech_ids.length; i < values.technologies.length; i++) {
                         if (values.technologies[i].technologyName.length !== 0) {
 
-
-                            const resTech = await axiosIntance.post("http://127.0.0.1:8000/job/technology/", {
-                                technology: values.technologies[i].technologyName[0],
-                                ranting: values.technologies[i].rating,
+                            const obj = {
+                                technology: values.technologies[i],
                                 candidate: candidate_id
-                            })
 
-                            console.log("Response techmology created:", resTech)
+                            }
+                            console.log("in technology:::", obj)
+                            const resTech = await authFetch("http://127.0.0.1:5000/create_technology", {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify(obj),
+
+                            })
+                            console.log("after fetch call", resTech)
+                            const res = await resTech.json()
+
+                            console.log("Response technology created:", res.data)
+
 
 
                         }
@@ -945,41 +1173,86 @@ const InputForm = () => {
             if (values.references.length != 0) {
                 if (values.references.length === refe_ids.length) {
                     for (var i = 0; i < values.references.length; i++) {
-                        const resRefe = await axiosIntance.put(`http://127.0.0.1:8000/job/reference/${refe_ids[i]}/`, {
+
+                        const obj = {
                             refe_name: values.references[i].name,
                             refe_contact_no: values.references[i].contactNo,
                             refe_relation: values.references[i].relation,
                             candidate: candidate_id
+
+                        }
+
+
+                        const resRefe = await authFetch(`http://127.0.0.1:5000/update_references/${refe_ids[i]}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(obj),
                         })
 
-                        console.log("Response reference updated:", resRefe)
+
+                        const res = await resRefe.json()
+
+                        console.log("Response reference updated:", res)
                     }
                 }
 
                 else if (values.references.length >= refe_ids.length) {
 
                     for (var i = 0; i < refe_ids.length; i++) {
-                        const resRefe = await axiosIntance.put(`http://127.0.0.1:8000/job/reference/${refe_ids[i]}/`, {
+
+                        const obj = {
                             refe_name: values.references[i].name,
                             refe_contact_no: values.references[i].contactNo,
                             refe_relation: values.references[i].relation,
                             candidate: candidate_id
+
+                        }
+
+
+                        const resRefe = await authFetch(`http://127.0.0.1:5000/update_references/${refe_ids[i]}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(obj),
                         })
 
-                        console.log("Response reference updated:", resRefe)
+
+                        const res = await resRefe.json()
+
+                        console.log("Response reference updated:", res)
+
+
+
                     }
 
 
                     for (var i = refe_ids.length; i < values.references.length; i++) {
 
-                        const resRefe = await axiosIntance.post("http://127.0.0.1:8000/job/reference/", {
-                            refe_name: values.references[i].name,
-                            refe_contact_no: values.references[i].contactNo,
-                            refe_relation: values.references[i].relation,
-                            candidate: candidate_id
-                        })
 
-                        console.log("Response reference created:", resRefe)
+
+                        const obj = {
+                            reference: values.references[i],
+                            candidate: candidate_id
+
+                        }
+                        console.log("in reference:::", obj)
+                        const resRefe = await authFetch("http://127.0.0.1:5000/create_reference", {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(obj),
+
+                        })
+                        console.log("after fetch call", resRefe)
+                        const res = await resRefe.json()
+
+                        console.log("Response reference created:", res.data)
+
+
                     }
                 }
 
@@ -987,21 +1260,41 @@ const InputForm = () => {
 
                 else if (values.references.length <= refe_ids.length) {
                     for (var i = 0; i < values.references.length; i++) {
-                        const resRefe = await axiosIntance.put(`http://127.0.0.1:8000/job/reference/${refe_ids[i]}/`, {
+                        const obj = {
                             refe_name: values.references[i].name,
                             refe_contact_no: values.references[i].contactNo,
                             refe_relation: values.references[i].relation,
                             candidate: candidate_id
+
+                        }
+
+
+                        const resRefe = await authFetch(`http://127.0.0.1:5000/update_references/${refe_ids[i]}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(obj),
                         })
 
-                        console.log("Response reference updated:", resRefe)
+
+                        const res = await resRefe.json()
+
+                        console.log("Response reference updated:", res)
+
+
                     }
 
 
                     for (var i = values.references.length; i < refe_ids.length; i++) {
-                        const resRefe = await axiosIntance.delete(`http://127.0.0.1:8000/job/reference/${refe_ids[i]}/`)
 
-                        console.log("Response reference deleted:", resRefe)
+                        const res = await authFetch(`http://127.0.0.1:5000/delete_reference/${refe_ids[i]}`, {
+                            method: 'DELETE'
+                        })
+
+                        const data = await res.json()
+                  
+                        console.log("Response reference deleted:", data)
                     }
 
                 }
@@ -1013,16 +1306,30 @@ const InputForm = () => {
             if (values.demoLocation.length != 0) {
                 if (values.demoLocation.length === pref_ids.length) {
                     for (var i = 0; i < values.demoLocation.length; i++) {
-                        const resPref = await axiosIntance.put(`http://127.0.0.1:8000/job/preference/${pref_ids[i]}/`, {
+
+                        const obj = {
                             prefer_location: values.demoLocation[i],
                             notice_period: values.noticePeriod,
                             expected_ctc: values.expectedCTC,
                             current_ctc: values.currentCTC,
                             department: values.department,
                             candidate: candidate_id
+
+                        }
+
+
+
+                        const resPref = await authFetch(`http://127.0.0.1:5000/update_preferences/${pref_ids[i]}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(obj),
                         })
 
-                        console.log("Response preference updated:", resPref)
+                        const res = await resPref.json()
+
+                        console.log("Response preference updated:", res)
                     }
                 }
 
@@ -1030,31 +1337,63 @@ const InputForm = () => {
                 else if (values.demoLocation.length >= pref_ids.length) {
 
                     for (var i = 0; i < pref_ids.length; i++) {
-                        const resPref = await axiosIntance.put(`http://127.0.0.1:8000/job/preference/${pref_ids[i]}/`, {
+
+
+                        const obj = {
                             prefer_location: values.demoLocation[i],
                             notice_period: values.noticePeriod,
                             expected_ctc: values.expectedCTC,
                             current_ctc: values.currentCTC,
                             department: values.department,
                             candidate: candidate_id
+
+                        }
+
+
+
+                        const resPref = await authFetch(`http://127.0.0.1:5000/update_preferences/${pref_ids[i]}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(obj),
                         })
 
-                        console.log("Response preference updated:", resPref)
+                        const res = await resPref.json()
+
+                        console.log("Response preference updated:", res)
+
+
+                 
                     }
 
 
                     for (var i = pref_ids.length; i < values.demoLocation.length; i++) {
 
-                        const resPref = await axiosIntance.post("http://127.0.0.1:8000/job/preference/", {
-                            prefer_location: values.demoLocation[i],
-                            notice_period: values.noticePeriod,
-                            expected_ctc: values.expectedCTC,
-                            current_ctc: values.currentCTC,
+
+                        const obj = {
+                            location: values.demoLocation[i],
+                            noticePeriod: values.noticePeriod,
+                            expectedCTC: values.expectedCTC,
+                            currentCTC: values.currentCTC,
                             department: values.department,
                             candidate: candidate_id
+    
+                        }
+                        console.log("in preference:::", obj)
+                        const resPrefe = await authFetch("http://127.0.0.1:5000/create_preference", {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(obj),
+    
                         })
+                        console.log("after fetch call", resPrefe)
+                        const res = await resPrefe.json()
+    
+                        console.log("Response preference created:", res.data)
 
-                        console.log("Response preference created:", resPref)
 
                     }
                 }
@@ -1062,23 +1401,45 @@ const InputForm = () => {
 
                 else if (values.demoLocation.length <= pref_ids.length) {
                     for (var i = 0; i < values.demoLocation.length; i++) {
-                        const resPref = await axiosIntance.put(`http://127.0.0.1:8000/job/preference/${pref_ids[i]}/`, {
+
+
+                        const obj = {
                             prefer_location: values.demoLocation[i],
                             notice_period: values.noticePeriod,
                             expected_ctc: values.expectedCTC,
                             current_ctc: values.currentCTC,
                             department: values.department,
                             candidate: candidate_id
+
+                        }
+
+
+
+                        const resPref = await authFetch(`http://127.0.0.1:5000/update_preferences/${pref_ids[i]}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(obj),
                         })
 
-                        console.log("Response preference updated:", resPref)
+                        const res = await resPref.json()
+
+                        console.log("Response preference updated:", res)
+
+
+
                     }
 
 
                     for (var i = values.demoLocation.length; i < pref_ids.length; i++) {
-                        const resPref = await axiosIntance.delete(`http://127.0.0.1:8000/job/preference/${pref_ids[i]}/`)
-
-                        console.log("Response preference deleted:", resPref)
+                        const res = await authFetch(`http://127.0.0.1:5000/delete_preference/${pref_ids[i]}`,{
+                            method:"DELETE"
+                        })
+    
+                        const data = await res.json()
+                        
+                        console.log("Response preference deleted:", data)
                     }
 
                 }
@@ -1406,7 +1767,7 @@ const InputForm = () => {
 
                                                     Course Name : <Field as="select" name={`academics.${index}.courseName`}>
                                                         <option selected hidden>Select course</option>
-                                                      
+
                                                         {
                                                             allCourses.map((course) => <option value={course.option_key}>{course.option_key}</option>)
                                                         }
@@ -1469,7 +1830,7 @@ const InputForm = () => {
 
                                                     To : <Field type='date' name={`experiences.${index}.to`} id={`experiences.${index}.to`} /><br /><br />
                                                     <ErrorMessage name={`experiences.${index}.to`} /><br /><br />
-                                                    
+
                                                     {
                                                         values.experiences.length > 1 ? <div><button type='button' onClick={() => remove(index)} >-</button><br /><br /></div> : null
                                                     }
@@ -1482,7 +1843,7 @@ const InputForm = () => {
 
                                         }
 
-                                       
+
 
                                     </div>
                                 )

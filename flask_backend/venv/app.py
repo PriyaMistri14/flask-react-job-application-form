@@ -668,6 +668,69 @@ def show_candidates():
 
 
 
+# .............................................fetch single candidate........
+@app.route("/fetch_candidate/<id>")
+@flask_praetorian.auth_required
+def fetch_candidate(id):
+    candidate = db.get_or_404(Candidate, id)
+    print("CAndiadte to show:  ", candidate)
+    c = {
+            "id" : candidate.id,
+            'fname': candidate.fname,
+            'lname': candidate.lname,
+            'surname' : candidate.surname,
+            'contact_no': candidate.contact_no,
+            'city': candidate.city,
+            'state': candidate.state,
+            'gender' : candidate.gender,
+            'email' : candidate.email,
+            'dob': candidate.dob,
+            'academics': [{"course_name" : aca.course_name,
+                           "id" : aca.id,
+                           "name_of_board_university" : aca.name_of_board_university,
+                           "passing_year" : aca.passing_year,
+                           "percentage": aca.percentage
+                           } for aca in candidate.academics ],
+
+            'experiences' : [{"company_name" : exe.company_name,
+                              "id" : exe.id,
+                              "designation" : exe.designation,
+                              "from_date": exe.from_date,
+                              "to_date":exe.to_date} for exe in candidate.experiences ],
+
+            'languages' : [{"language": lan.language,
+                            "id" : lan.id,
+                            "read": lan.read,
+                            "write": lan.write,
+                            "speak": lan.speak} for lan in candidate.languages ],
+
+
+            "technologies" : [{"technology": tec.technology,
+                               "id" : tec.id,
+                               "ranting": tec.ranting} for tec in candidate.technologies ],
+
+            "references" : [{"refe_name": ref.refe_name,
+                             "id" : ref.id, 
+                             "refe_contact_no": ref.refe_contact_no,
+                             "refe_relation": ref.refe_relation} for ref in candidate.references ],
+
+
+            "preferences" : [{"prefer_location" : pre.prefer_location,
+                              "id": pre.id,    
+                              "notice_period" : pre.notice_period,
+                              "expected_ctc": pre.expected_ctc,
+                              "current_ctc": pre.current_ctc,
+                              "department" : pre.department} for pre in candidate.preferences ]
+
+
+        
+    }
+
+    return make_response({"data":c, "message":"Successfully fetched"}, 200)
+
+
+
+
 
 
 # ..........................................pagination.........................
@@ -677,50 +740,106 @@ def pagination():
     page = request.args.get("page", 1)
     order = request.args.get("order")
     sort = request.args.get("sort")
-    print("ASSASSASAS:   ", order, sort, page)
+    search = request.args.get("search")
+    print("ASSASSASAS:   ", order, sort, page, search)
     pages= int(page)
-    if order and sort and sort == 'fname':
-        paginated_data = db.paginate(Candidate.query.order_by(Candidate.fname), page=pages, per_page=per_page) if order == 'asc' else db.paginate(Candidate.query.order_by(Candidate.fname.desc()), page=pages, per_page=per_page)
-
-        print("Paginated_data::", paginated_data.total)
-
-    elif order and sort and sort == 'lname':
-        paginated_data = db.paginate(Candidate.query.order_by(Candidate.lname), page=pages, per_page=per_page) if order == 'asc' else db.paginate(Candidate.query.order_by(Candidate.lname.desc()), page=pages, per_page=per_page)
-
-        print("Paginated_data::", paginated_data.total)
     
-    elif order and sort and sort == 'surname':
-        paginated_data = db.paginate(Candidate.query.order_by(Candidate.surname), page=pages, per_page=per_page) if order == 'asc' else db.paginate(Candidate.query.order_by(Candidate.surname.desc()), page=pages, per_page=per_page)
+    if search:
+       
 
-        print("Paginated_data::", paginated_data.total)
+        if order and sort and sort == 'fname':
+            paginated_data = db.paginate(Candidate.query.filter((Candidate.fname.icontains(search)) | (Candidate.lname.icontains(search)) | (Candidate.surname.icontains(search))  | (Candidate.email.icontains(search)) | (Candidate.state.icontains(search)) | (Candidate.city.icontains(search))).order_by(Candidate.fname), page=pages, per_page=per_page) if order == 'asc' else db.paginate(Candidate.query.filter((Candidate.fname.icontains(search)) | (Candidate.lname.icontains(search)) | (Candidate.isurname.contains(search)) | (Candidate.email.icontains(search)) | (Candidate.state.icontains(search)) | (Candidate.city.icontains(search))).order_by(Candidate.fname.desc()), page=pages, per_page=per_page)
 
-    elif order and sort and sort == 'contact_no':
-        paginated_data = db.paginate(Candidate.query.order_by(Candidate.contact_no), page=pages, per_page=per_page) if order == 'asc' else db.paginate(Candidate.query.order_by(Candidate.contact_no.desc()), page=pages, per_page=per_page)
+            print("Paginated_data::SEEEEE", paginated_data.total)
 
-        print("Paginated_data::", paginated_data.total)
+        elif order and sort and sort == 'lname':
+            paginated_data = db.paginate(Candidate.query.filter((Candidate.fname.icontains(search)) | (Candidate.lname.icontains(search)) | (Candidate.surname.icontains(search))  | (Candidate.email.icontains(search)) | (Candidate.state.icontains(search)) | (Candidate.city.icontains(search))).order_by(Candidate.lname), page=pages, per_page=per_page) if order == 'asc' else db.paginate(Candidate.query.filtre((Candidate.fname.icontains(search)) | (Candidate.lname.icontains(search)) | (Candidate.surname.icontains(search)) | (Candidate.email.icontains(search)) | (Candidate.state.icontains(search)) | (Candidate.city.icontains(search))).order_by(Candidate.lname.desc()), page=pages, per_page=per_page)
 
-    elif order and sort and sort == 'email':
-        paginated_data = db.paginate(Candidate.query.order_by(Candidate.email), page=pages, per_page=per_page) if order == 'asc' else db.paginate(Candidate.query.order_by(Candidate.email.desc()), page=pages, per_page=per_page)
+            print("Paginated_data::", paginated_data.total)
 
-        print("Paginated_data::", paginated_data.total)
+        elif order and sort and sort == 'surname':
+            paginated_data = db.paginate(Candidate.query.filter((Candidate.fname.icontains(search)) | (Candidate.lname.icontains(search)) | (Candidate.surname.icontains(search)) | (Candidate.email.icontains(search)) | (Candidate.state.icontains(search)) | (Candidate.city.icontains(search))).order_by(Candidate.surname), page=pages, per_page=per_page) if order == 'asc' else db.paginate(Candidate.query.filter((Candidate.fname.icontains(search)) | (Candidate.lname.icontains(search)) | (Candidate.surname.icontains(search)) | (Candidate.email.icontains(search)) | (Candidate.state.icontains(search)) | (Candidate.city.icontains(search))).order_by(Candidate.surname.desc()), page=pages, per_page=per_page)
+
+            print("Paginated_data::", paginated_data.total)
+
+        elif order and sort and sort == 'contact_no':
+            paginated_data = db.paginate(Candidate.query.filter((Candidate.fname.icontains(search)) | (Candidate.lname.icontains(search)) | (Candidate.surname.icontains(search)) | (Candidate.email.icontains(search)) | (Candidate.state.icontains(search)) | (Candidate.city.icontains(search))).order_by(Candidate.contact_no), page=pages, per_page=per_page) if order == 'asc' else db.paginate(Candidate.query.filter((Candidate.fname.icontains(search)) | (Candidate.lname.icontains(search)) | (Candidate.surname.icontains(search))  | (Candidate.email.icontains(search)) | (Candidate.state.icontains(search)) | (Candidate.city.icontains(search))).order_by(Candidate.contact_no.desc()), page=pages, per_page=per_page)
+
+            print("Paginated_data::", paginated_data.total)
+
+        elif order and sort and sort == 'email':
+            paginated_data = db.paginate(Candidate.query.filter((Candidate.fname.icontains(search)) | (Candidate.lname.icontains(search)) | (Candidate.surname.icontains(search)) | (Candidate.email.icontains(search)) | (Candidate.state.icontains(search)) | (Candidate.city.icontains(search))).order_by(Candidate.email), page=pages, per_page=per_page) if order == 'asc' else db.paginate(Candidate.query.filter((Candidate.fname.icontains(search)) | (Candidate.lname.icontains(search)) | (Candidate.surname.icontains(search)) | (Candidate.email.icontains(search)) | (Candidate.state.icontains(search)) | (Candidate.city.icontains(search))).order_by(Candidate.email.desc()), page=pages, per_page=per_page)
+
+            print("Paginated_data::", paginated_data.total)
 
 
-    elif order and sort and sort == 'state':
-        paginated_data = db.paginate(Candidate.query.order_by(Candidate.state), page=pages, per_page=per_page) if order == 'asc' else db.paginate(Candidate.query.order_by(Candidate.state.desc()), page=pages, per_page=per_page)
+        elif order and sort and sort == 'state':
+            paginated_data = db.paginate(Candidate.query.filter((Candidate.fname.icontains(search)) | (Candidate.lname.icontains(search)) | (Candidate.surname.icontains(search)) | (Candidate.email.icontains(search)) | (Candidate.state.icontains(search)) | (Candidate.city.icontains(search))).order_by(Candidate.state), page=pages, per_page=per_page) if order == 'asc' else db.paginate(Candidate.query.filter((Candidate.fname.contains(search)) | (Candidate.lname.contains(search)) | (Candidate.surname.contains(search)) | (Candidate.email.contains(search)) | (Candidate.state.contains(search)) | (Candidate.city.contains(search))).order_by(Candidate.state.desc()), page=pages, per_page=per_page)
 
-        print("Paginated_data::", paginated_data.total)
+            print("Paginated_data::", paginated_data.total)
 
-    elif order and sort and sort == 'city':
-        paginated_data = db.paginate(Candidate.query.order_by(Candidate.city), page=pages, per_page=per_page) if order == 'asc' else db.paginate(Candidate.query.order_by(Candidate.city.desc()), page=pages, per_page=per_page)
+        elif order and sort and sort == 'city':
+            paginated_data = db.paginate(Candidate.query.filter((Candidate.fname.icontains(search)) | (Candidate.lname.icontains(search)) | (Candidate.surname.icontains(search)) | (Candidate.email.icontains(search)) | (Candidate.state.icontains(search)) | (Candidate.city.icontains(search))).order_by(Candidate.city), page=pages, per_page=per_page) if order == 'asc' else db.paginate(Candidate.query.filter((Candidate.fname.contains(search)) | (Candidate.lname.contains(search)) | (Candidate.surname.contains(search)) | (Candidate.email.contains(search)) | (Candidate.state.contains(search)) | (Candidate.city.contains(search))).order_by(Candidate.city.desc()), page=pages, per_page=per_page)
 
-        print("Paginated_data::", paginated_data.total)
+            print("Paginated_data::", paginated_data.total)
 
-    
+        else:
+
+            paginated_data = db.paginate(Candidate.query.filter((Candidate.fname.icontains(search)) | (Candidate.lname.icontains(search)) | (Candidate.surname.icontains(search)) | (Candidate.email.icontains(search)) | (Candidate.state.icontains(search)) | (Candidate.city.icontains(search))).order_by(Candidate.id), page=pages, per_page=per_page)
+            print("Paginated_data::", paginated_data.total)
+
+
+
 
     else:
 
-        paginated_data = db.paginate(Candidate.query.order_by(Candidate.id), page=pages, per_page=per_page)
-        print("Paginated_data::", paginated_data.total)
+        
+        if order and sort and sort == 'fname':
+            paginated_data = db.paginate(Candidate.query.order_by(Candidate.fname), page=pages, per_page=per_page) if order == 'asc' else db.paginate(Candidate.query.order_by(Candidate.fname.desc()), page=pages, per_page=per_page)
+
+            print("Paginated_data::", paginated_data.total)
+
+        elif order and sort and sort == 'lname':
+            paginated_data = db.paginate(Candidate.query.order_by(Candidate.lname), page=pages, per_page=per_page) if order == 'asc' else db.paginate(Candidate.query.order_by(Candidate.lname.desc()), page=pages, per_page=per_page)
+
+            print("Paginated_data::", paginated_data.total)
+
+        elif order and sort and sort == 'surname':
+            paginated_data = db.paginate(Candidate.query.order_by(Candidate.surname), page=pages, per_page=per_page) if order == 'asc' else db.paginate(Candidate.query.order_by(Candidate.surname.desc()), page=pages, per_page=per_page)
+
+            print("Paginated_data::", paginated_data.total)
+
+        elif order and sort and sort == 'contact_no':
+            paginated_data = db.paginate(Candidate.query.order_by(Candidate.contact_no), page=pages, per_page=per_page) if order == 'asc' else db.paginate(Candidate.query.order_by(Candidate.contact_no.desc()), page=pages, per_page=per_page)
+
+            print("Paginated_data::", paginated_data.total)
+
+        elif order and sort and sort == 'email':
+            paginated_data = db.paginate(Candidate.query.order_by(Candidate.email), page=pages, per_page=per_page) if order == 'asc' else db.paginate(Candidate.query.order_by(Candidate.email.desc()), page=pages, per_page=per_page)
+
+            print("Paginated_data::", paginated_data.total)
+
+
+        elif order and sort and sort == 'state':
+            paginated_data = db.paginate(Candidate.query.order_by(Candidate.state), page=pages, per_page=per_page) if order == 'asc' else db.paginate(Candidate.query.order_by(Candidate.state.desc()), page=pages, per_page=per_page)
+
+            print("Paginated_data::", paginated_data.total)
+
+        elif order and sort and sort == 'city':
+            paginated_data = db.paginate(Candidate.query.order_by(Candidate.city), page=pages, per_page=per_page) if order == 'asc' else db.paginate(Candidate.query.order_by(Candidate.city.desc()), page=pages, per_page=per_page)
+
+            print("Paginated_data::", paginated_data.total)
+
+        else:
+
+            paginated_data = db.paginate(Candidate.query.order_by(Candidate.id), page=pages, per_page=per_page)
+            print("Paginated_data::", paginated_data.total)
+
+
+
+
+
+
 
     cand = []
     for i in paginated_data:
@@ -736,6 +855,44 @@ def pagination():
             'gender' : i.gender,
             'email' : i.email,
             'dob': i.dob,
+            'academics': [{"course_name" : aca.course_name,
+                           "id" : aca.id,
+                           "name_of_board_university" : aca.name_of_board_university,
+                           "passing_year" : aca.passing_year,
+                           "percentage": aca.percentage
+                           } for aca in i.academics ],
+
+            'experiences' : [{"company_name" : exe.company_name,
+                              "id" : exe.id,
+                              "designation" : exe.designation,
+                              "from_date": exe.from_date,
+                              "to_date":exe.to_date} for exe in i.experiences ],
+
+            'languages' : [{"language": lan.language,
+                            "id" : lan.id,
+                            "read": lan.read,
+                            "write": lan.write,
+                            "speak": lan.speak} for lan in i.languages ],
+
+
+            "technologies" : [{"technology": tec.technology,
+                               "id" : tec.id,
+                               "ranting": tec.ranting} for tec in i.technologies ],
+
+            "references" : [{"refe_name": ref.refe_name,
+                             "id" : ref.id, 
+                             "refe_contact_no": ref.refe_contact_no,
+                             "refe_relation": ref.refe_relation} for ref in i.references ],
+
+
+            "preferences" : [{"prefer_location" : pre.prefer_location,
+                              "id": pre.id,    
+                              "notice_period" : pre.notice_period,
+                              "expected_ctc": pre.expected_ctc,
+                              "current_ctc": pre.current_ctc,
+                              "department" : pre.department} for pre in i.preferences ]
+
+
         }
         cand.append(c)
     no_of_pages = math.ceil(paginated_data.total/per_page)
@@ -760,124 +917,165 @@ def pagination():
 @app.route("/update_candidate/<id>", methods=["POST"])
 @flask_praetorian.auth_required
 def update_candidate(id):
-    updated_data = json.loads(request.data.decode('utf-8'))
-    candidate = db.get_or_404(Candidate, id)
-    # print("..............candidate", candidate, "updated data::::::", updated_data )
-    candidate.fname = updated_data['fname']
-    candidate.lname = updated_data['lname']
-    candidate.surname = updated_data['surname']
-    candidate.contact_no = updated_data['contact_no']
-    candidate.city = updated_data['city']
-    candidate.state = updated_data['state']
-    candidate.gender = updated_data['gender']
-    candidate.email = updated_data['email']
-    candidate.dob = updated_data['dob']
+    # updated_data = json.loads(request.data.decode('utf-8'))
+    try:
+        updated_data = request.get_json(force=True)
+        candidate = db.get_or_404(Candidate, id)
+        print("..............candidate", candidate, "updated data::::::", updated_data )
+        candidate.fname = updated_data['fname']
+        candidate.lname = updated_data['lname']
+        candidate.surname = updated_data['surname']
+        candidate.contact_no = updated_data['phone']
+        candidate.city = updated_data['city']
+        candidate.state = updated_data['state']
+        candidate.gender = updated_data['gender']
+        candidate.email = updated_data['email']
+        candidate.dob = updated_data['dob']
 
-    db.session.commit()
-    print(";;;;;;", candidate.fname)
-    return "Candidates Successfully updated!!"
+        db.session.commit()
+        print(";;;;;;", candidate.fname)
+        return make_response({"data":"", "message": "Candidates Successfully updated!!"}, 200)
+
+    except:
+        return make_response({"data":"", "message": "Error while updating candidate!!"}, 200)
+            
 
 
 
 @app.route("/update_academics/<id>", methods=["POST"])
 @flask_praetorian.auth_required
 def update_academics(id):
-    updated_data = json.loads(request.data.decode('utf-8'))
-    academics = db.get_or_404(Academic, id)
-    academics.course_name = updated_data['course_name']
-    academics.name_of_board_university = updated_data['name_of_board_university']
-    academics.passing_year = updated_data['passing_year']
-    academics.percentage = updated_data['percentage']
+    # updated_data = json.loads(request.data.decode('utf-8'))
+    try:
+        updated_data = request.get_json(force=True)
+        academics = db.get_or_404(Academic, id)
+        academics.course_name = updated_data['course_name']
+        academics.name_of_board_university = updated_data['name_of_board_university']
+        academics.passing_year = updated_data['passing_year']
+        academics.percentage = updated_data['percentage']
 
-    db.session.commit()
+        db.session.commit()
 
-    return "Academics Successfully updated!!"
+        return make_response({"data":"", "message": "Academics Successfully updated!!"}, 200)
+
+    except:
+        return make_response({"data":"", "message": "Error while updating academic!!"}, 200)
 
 
 
 @app.route("/update_experiences/<id>", methods=['POST'])
 @flask_praetorian.auth_required
 def update_experience(id):
-    updated_data = json.loads(request.data.decode('utf-8'))
-    experiences = db.get_or_404(Experience, id)
-    experiences.compamy_name = updated_data['company_name']
-    experiences.designation = updated_data['designation']
-    experiences.from_date = updated_data['from_date']
-    experiences.to_date = updated_data['to_date']
+    # updated_data = json.loads(request.data.decode('utf-8'))
+    try:
+        updated_data = request.get_json(force = True)
+        print("SSSSS:::::::::::      ", updated_data['company_name'])
+        experiences = db.get_or_404(Experience, id)
+        experiences.company_name = updated_data['company_name']
+        experiences.designation = updated_data['designation']
+        experiences.from_date = updated_data['from_date']
+        experiences.to_date = updated_data['to_date']
 
-    db.session.commit()
+        db.session.commit()
 
-    return "Experiences Successfully updated!!"
+
+        return make_response({"data":"", "message": "Experience Successfully updated!!"}, 200)
+
+    except:
+        return make_response({"data":"", "message": "Error while updating experience!!"}, 200)
 
 
 
 @app.route("/update_languages/<id>", methods=["POST"])
 @flask_praetorian.auth_required
 def update_languages(id):
-    updated_data = json.loads(request.data.decode('utf-8'))
+    # updated_data = json.loads(request.data.decode('utf-8'))
+    try:
+        updated_data = request.get_json(force= True)
 
-    languages= db.get_or_404(Language, id)
+        languages= db.get_or_404(Language, id)
 
-    languages.language = updated_data['language']
-    languages.read = updated_data["read"]
-    languages.write = updated_data["write"]
-    languages.speak = updated_data["speak"]
+        languages.language = updated_data['language']
+        languages.read = updated_data["read"]
+        languages.write = updated_data["write"]
+        languages.speak = updated_data["speak"]
 
-    db.session.commit()
+        db.session.commit()
 
-    return "Languages succussfully updated!!"
+        return make_response({"data":"", "message": "Language Successfully updated!!"}, 200)
+
+    except:
+        return make_response({"data":"", "message": "Error while updating language!!"}, 200)
 
 
 
 @app.route("/update_technologies/<id>", methods=["POST"])
 @flask_praetorian.auth_required
 def update_technologies(id):
-    updated_data = json.loads(request.data.decode('utf-8'))
+    # updated_data = json.loads(request.data.decode('utf-8'))
+    try:
+        updated_data = request.get_json(force=True)
 
-    technologies = db.get_or_404(Technology, id)
+        technologies = db.get_or_404(Technology, id)
 
-    technologies.technology = updated_data["technology"]
-    technologies.ranting = updated_data["ranting"]
+        technologies.technology = updated_data["technology"]
+        technologies.ranting = updated_data["ranting"]
 
-    db.session.commit()
+        db.session.commit()
 
-    return "Technology updated successfully!!"
+        return make_response({"data":"", "message": "Technology Successfully updated!!"}, 200)
+
+    except:
+        return make_response({"data":"", "message": "Error while updating technology!!"}, 200)
 
 
 
 @app.route("/update_references/<id>", methods=['POST'])
 @flask_praetorian.auth_required
 def update_references(id):
-    updated_data = json.loads(request.data.decode('utf-8'))
+    # updated_data = json.loads(request.data.decode('utf-8'))
 
-    references = db.get_or_404(Reference, id)
+    try:
+        updated_data = request.get_json(force=True)
 
-    references.refe_name = updated_data['refe_name']
-    references.refe_contact_no = updated_data["refe_contact_no"]
-    references.refe_relation = updated_data["refe_relation"]
+        references = db.get_or_404(Reference, id)
 
-    db.session.commit()
+        references.refe_name = updated_data['refe_name']
+        references.refe_contact_no = updated_data["refe_contact_no"]
+        references.refe_relation = updated_data["refe_relation"]
 
-    return "References updated successfully!!!!"
+        db.session.commit()
+
+        return make_response({"data":"", "message": "Reference Successfully updated!!"}, 200)
+
+    except:
+        return make_response({"data":"", "message": "Error while updating reference!!"}, 200)
+
 
 
 
 @app.route("/update_preferences/<id>", methods= ["POST"])
 @flask_praetorian.auth_required
 def update_preferences(id):
-    updated_data = json.loads(request.data.decode('utf-8'))
+    # updated_data = json.loads(request.data.decode('utf-8'))
 
-    preferences =  db.get_or_404(Preference, id)
+    try:
+        updated_data = request.get_json(force= True)
 
-    preferences.prefer_location = updated_data["prefer_location"]
-    preferences.notice_period = updated_data["notice_period"]
-    preferences.expected_ctc = updated_data["expected_ctc"]
-    preferences.current_ctc = updated_data["current_ctc"]
-    preferences.department = updated_data["department"]
+        preferences =  db.get_or_404(Preference, id)
 
-    db.session.commit()
+        preferences.prefer_location = updated_data["prefer_location"]
+        preferences.notice_period = updated_data["notice_period"]
+        preferences.expected_ctc = updated_data["expected_ctc"]
+        preferences.current_ctc = updated_data["current_ctc"]
+        preferences.department = updated_data["department"]
 
-    return "Preferences Upadated Successfully !!!!"
+        db.session.commit()
+
+        return make_response({"data":"", "message": "Preference Successfully updated!!"}, 200)
+
+    except:
+        return make_response({"data":"", "message": "Error while updating preference!!"}, 200)
 
 
 
@@ -887,39 +1085,49 @@ def update_preferences(id):
 @app.route("/delete_candidate/<id>", methods=["DELETE"])
 @flask_praetorian.auth_required
 def delete_candidate(id):
+    print("IDDDDDDDD:   ", id)
+    try:
+        candidate = db.get_or_404(Candidate, id)
 
-    candidate = db.get_or_404(Candidate, id)
+        db.session.delete(candidate)
+        db.session.commit()
 
-    db.session.delete(candidate)
-    db.session.commit()
-
-    return "Candidate deleted successfully!!!"
-
+        return make_response({"data":"", "message":"Candidate deleted successfully!!!"}, 200) 
+    except:
+        return make_response({"data":"", "message":"Error while delete candidate!!"}, 200) 
 
 @app.route("/delete_academic/<id>", methods=["DELETE"])
 @flask_praetorian.auth_required
 def delete_academic(id):
+    print("IDDDDDDDD:   ", id)
+    try:
+        academic = db.get_or_404(Academic, id)
 
-    academic = db.get_or_404(Academic, id)
+        db.session.delete(academic)
+        db.session.commit()
 
-    db.session.delete(academic)
+        return make_response({"data":"", "message":"Academic deleted successfully!!!"}, 200) 
+    except:
+        return make_response({"data":"", "message":"Error while delete acdemic!!"}, 200) 
 
-    db.session.commit()
 
-    return "Academics deleted successfully!!!"
 
 
 @app.route("/delete_experience/<id>", methods=["DELETE"])
 @flask_praetorian.auth_required
 def delete_experience(id):
+    print("IDDDDDDDD:   ", id)
+    try:
+        experience = db.get_or_404(Experience, id)
 
-    experience = db.get_or_404(Experience, id)
+        db.session.delete(experience)
+        db.session.commit()
 
-    db.session.delete(experience)
+        return make_response({"data":"", "message":"Experience deleted successfully!!!"}, 200) 
+    except:
+        return make_response({"data":"", "message":"Error while delete experience!!"}, 200) 
 
-    db.session.commit()
-
-    return "Experience deleted successfully!!!"
+   
 
 
 
@@ -927,14 +1135,18 @@ def delete_experience(id):
 @app.route("/delete_language/<id>", methods=["DELETE"])
 @flask_praetorian.auth_required
 def delete_language(id):
+    print("IDDDDDDDD:   ", id)
+    try:
+        language = db.get_or_404(Language, id)
 
-    language = db.get_or_404(Language, id)
+        db.session.delete(language)
+        db.session.commit()
 
-    db.session.delete(language)
+        return make_response({"data":"", "message":"Langugae deleted successfully!!!"}, 200) 
+    except:
+        return make_response({"data":"", "message":"Error while delete language!!"}, 200) 
 
-    db.session.commit()
-
-    return "Language deleted successfully!!!!"
+   
 
 
 
@@ -942,42 +1154,52 @@ def delete_language(id):
 @app.route("/delete_technology/<id>", methods=["DELETE"])
 @flask_praetorian.auth_required
 def delete_technology(id):
+    print("IDDDDDDDD:   ", id)
+    try:
+        technology = db.get_or_404(Technology, id)
 
-    technology = db.get_or_404(Technology, id)
+        db.session.delete(technology)
+        db.session.commit()
 
-    db.session.delete(technology)
+        return make_response({"data":"", "message":"Technology deleted successfully!!!"}, 200) 
+    except:
+        return make_response({"data":"", "message":"Error while delete technology!!"}, 200) 
 
-    db.session.commit()
-
-    return "Technology deleted successfully!!!"
-
-
+   
 
 @app.route("/delete_reference/<id>", methods=["DELETE"])
 @flask_praetorian.auth_required
 def delete_reference(id):
+    print("IDDDDDDDD:   ", id)
+    try:
+        reference = db.get_or_404(Reference, id)
 
-    reference = db.get_or_404(Reference, id)
+        db.session.delete(reference)
+        db.session.commit()
 
-    db.session.delete(reference)
+        return make_response({"data":"", "message":"Refrerence deleted successfully!!!"}, 200) 
+    except:
+        return make_response({"data":"", "message":"Error while delete reference!!"}, 200) 
 
-    db.session.commit()
-
-    return "Reference deleted successfully !!!"
+ 
 
 
 
 @app.route("/delete_preference/<id>", methods=["DELETE"])
 @flask_praetorian.auth_required
 def delete_preference(id):
+    print("IDDDDDDDD:   ", id)
+    try:
+        preference = db.get_or_404(Preference, id)
 
-    preference = db.get_or_404(Preference, id)
+        db.session.delete(preference)
+        db.session.commit()
 
-    db.session.delete(preference)
+        return make_response({"data":"", "message":"Preference deleted successfully!!!"}, 200) 
+    except:
+        return make_response({"data":"", "message":"Error while delete preference!!"}, 200) 
 
-    db.session.commit()
 
-    return "Preference deleted successfully!!!!"
 
 
 

@@ -18,7 +18,7 @@ import { Routes, Route, Link } from "react-router-dom";
 
 import { useNavigate } from 'react-router-dom';
 
-import Update from './components/update/update.component';
+
 
 function App() {
 
@@ -48,19 +48,6 @@ function App() {
 
   }
 
-
-
-
-  const fetch_home = async()=>{
-    const resCand = await authFetch("http://127.0.0.1:5000/home")
-    const res =  await resCand.json()
-    console.log("Fetched home ::", res)
-    // console.log("Fetched home ::", resCand.data.data, resCand.data.message)
-  }
-
-
-
-
   return (
     <div className="App">
       <nav className='nav-bar'>
@@ -69,19 +56,14 @@ function App() {
              : <span onClick={()=>{logout()
             navigate("/login/")}}><strong>Log Out</strong></span>
 
-          // localStorage.getItem("access_token")
-          // && axiosIntance.defaults.headers['Authorization']
-          // && <span onClick={logoutHandler}><strong>Log Out</strong></span> || <Link to="/login/" className='nav-link'><strong>Login</strong></Link>
-
-
-
+         
 
         }
 
-        {/* <Link to="/register/" className='nav-link' >Register</Link> */}
+       
         <Link to="/input-form/" className='nav-link' ><strong>Input Form</strong></Link>
         <Link to="/show-candidate/" className='nav-link' ><strong>Show Candidate</strong></Link>
-        <p onClick={fetch_home}>Home</p>
+       
 
       </nav>
 
@@ -91,7 +73,7 @@ function App() {
         <Route path="/register/" element={<RegistrationForm />} />
         <Route path="/input-form/" element={<InputForm />} />
         <Route path="/show-candidate/" element={<ShowCandidate />} />
-        {/* <Route path="/update/:candidate_id" element={<Update />} /> */}
+       
         <Route path="/update_form/:candidate_id" element={<InputForm />} />
 
       </Routes>
