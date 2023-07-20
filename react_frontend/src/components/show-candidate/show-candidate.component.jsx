@@ -9,7 +9,10 @@ import { useState, useEffect } from 'react'
 
 import { Link, useNavigate } from 'react-router-dom'
 
-import { authFetch } from '../../axiosApi'
+import { authFetch, authFetchDELETE, authFetchGET, authFetchPOST } from '../../axiosApi'
+
+
+
 
 
 
@@ -26,7 +29,7 @@ function ShowCandidate() {
     const [search, setSearch] = useState("")
 
 
-    const data_per_page = 5
+   
 
 
     const navigate = useNavigate()
@@ -52,18 +55,15 @@ function ShowCandidate() {
 
             try {
 
-                const res = await authFetch(`http://127.0.0.1:5000/delete_candidate/${candidate_id}`, {
-                    method: 'DELETE'
-                })
+                const res = await authFetchDELETE(`delete_candidate/${candidate_id}`
+                )
                 const data = await res.json()
                 console.log("DATATAT:   ", data);
 
                 academics.map(async (academic) => {
                     const academic_id = academic.id
                     console.log("academic id", academic_id)
-                    const res = await authFetch(`http://127.0.0.1:5000/delete_academic/${academic_id}`, {
-                        method: 'DELETE'
-                    })
+                    const res = await authFetchDELETE(`delete_academic/${academic_id}`)
                     const data = await res.json()
                     console.log("DATATAT ACDA:   ", data);
                 })
@@ -72,9 +72,7 @@ function ShowCandidate() {
                 experiences.map(async (experience) => {
                     const experience_id = experience.id
                     console.log("experience id", experience_id)
-                    const res = await authFetch(`http://127.0.0.1:5000/delete_experience/${experience_id}`,{
-                        method: 'DELETE'
-                    })
+                    const res = await authFetchDELETE(`delete_experience/${experience_id}`)
                     const data = await res.json()
                     console.log("DATATAT EXPE:   ", data);
                 })
@@ -82,9 +80,7 @@ function ShowCandidate() {
                 languages.map(async (language) => {
                     const language_id = language.id
                     console.log("language id", language_id)
-                    const res = await authFetch(`http://127.0.0.1:5000/delete_language/${language_id}`, {
-                        method:'DELETE'
-                    })
+                    const res = await authFetchDELETE(`delete_language/${language_id}`)
 
                     const data = await res.json()
                     console.log("DATATAT LANG:   ", data);
@@ -94,9 +90,7 @@ function ShowCandidate() {
                 technologies.map(async (technology) => {
                     const technology_id = technology.id
                     console.log("technology id", technology_id)
-                    const res = await authFetch(`http://127.0.0.1:5000/delete_technology/${technology_id}`, {
-                        method:"DELETE"
-                    })
+                    const res = await authFetchDELETE(`delete_technology/${technology_id}`)
 
                     const data = await res.json()
                     console.log("DATATAT TECH:   ", data);
@@ -106,9 +100,7 @@ function ShowCandidate() {
                 references.map(async (reference) => {
                     const reference_id = reference.id
                     console.log("reference id", reference_id)
-                    const res = await authFetch(`http://127.0.0.1:5000/delete_reference/${reference_id}`,{
-                        method:'DELETE'
-                    })
+                    const res = await authFetchDELETE(`delete_reference/${reference_id}`)
 
                     const data = await res.json()
                     console.log("DATATAT REFE:   ", data);
@@ -118,9 +110,7 @@ function ShowCandidate() {
                 preferences.map(async (preference) => {
                     const preference_id = preference.id
                     console.log("preference id", preference_id)
-                    const res = await authFetch(`http://127.0.0.1:5000/delete_preference/${preference_id}`,{
-                        method:"DELETE"
-                    })
+                    const res = await authFetchDELETE(`delete_preference/${preference_id}`)
 
                     const data = await res.json()
                     console.log("DATATAT PREFE:   ", data);
@@ -143,7 +133,7 @@ function ShowCandidate() {
         console.log("]]]]]]]]]]]]", page_no, sort, order, search);
         try {
 
-            const paginated_data = await authFetch(`http://127.0.0.1:5000/pagination/?page=${page_no}&order=${order}&sort=${sort}&search=${search}`)
+            const paginated_data = await authFetchGET(`pagination/?page=${page_no}&order=${order}&sort=${sort}&search=${search}`)
 
             const res = await paginated_data.json()
 
@@ -168,7 +158,7 @@ function ShowCandidate() {
         setSearch(search)
 
         try {
-            const paginated_data = await authFetch(`http://127.0.0.1:5000/pagination/?page=1&sort=${sort}&order=${order}&search=${search}`)
+            const paginated_data = await authFetchGET(`pagination/?page=1&sort=${sort}&order=${order}&search=${search}`)
 
             const res = await paginated_data.json()
 
@@ -208,7 +198,7 @@ function ShowCandidate() {
         setSearch(state)
 
         try {
-            const paginated_data = await authFetch(`http://127.0.0.1:5000/pagination/?page=1&sort=${sort}&order=${order}&search=${state}`)
+            const paginated_data = await authFetchGET(`pagination/?page=1&sort=${sort}&order=${order}&search=${state}`)
 
             const res = await paginated_data.json()
 
@@ -250,7 +240,7 @@ function ShowCandidate() {
         switch (field) {
             case 'fname':
                 setSort('fname')
-                const paginated_data_fname = await authFetch(`http://127.0.0.1:5000/pagination/?page=1&order=${order}&sort=fname&search=${search}`)
+                const paginated_data_fname = await authFetchGET(`pagination/?page=1&order=${order}&sort=fname&search=${search}`)
 
                 const res_fname = await paginated_data_fname.json()
 
@@ -262,7 +252,7 @@ function ShowCandidate() {
 
             case 'lname':
                 setSort('lname')
-                const paginated_data_lname = await authFetch(`http://127.0.0.1:5000/pagination/?page=1&order=${order}&sort=lname&search=${search}`)
+                const paginated_data_lname = await authFetchGET(`pagination/?page=1&order=${order}&sort=lname&search=${search}`)
 
                 const res_lname = await paginated_data_lname.json()
 
@@ -274,7 +264,7 @@ function ShowCandidate() {
 
             case 'surname':
                 setSort('surname')
-                const paginated_data_surname = await authFetch(`http://127.0.0.1:5000/pagination/?page=1&order=${order}&sort=surname&search=${search}`)
+                const paginated_data_surname = await authFetchGET(`pagination/?page=1&order=${order}&sort=surname&search=${search}`)
 
                 const res_surname = await paginated_data_surname.json()
 
@@ -288,7 +278,7 @@ function ShowCandidate() {
             case 'contact_no':
                 setSort('contact_no')
 
-                const paginated_data_contact_no = await authFetch(`http://127.0.0.1:5000/pagination/?page=1&order=${order}&sort=contact_no&search=${search}`)
+                const paginated_data_contact_no = await authFetchGET(`pagination/?page=1&order=${order}&sort=contact_no&search=${search}`)
 
                 const res_contact_no = await paginated_data_contact_no.json()
 
@@ -302,7 +292,7 @@ function ShowCandidate() {
 
             case 'email':
                 setSort('email')
-                const paginated_data_email = await authFetch(`http://127.0.0.1:5000/pagination/?page=1&order=${order}&sort=email&search=${search}`)
+                const paginated_data_email = await authFetchGET(`pagination/?page=1&order=${order}&sort=email&search=${search}`)
 
                 const res_email = await paginated_data_email.json()
 
@@ -316,7 +306,7 @@ function ShowCandidate() {
 
             case 'state':
                 setSort('state')
-                const paginated_data_state = await authFetch(`http://127.0.0.1:5000/pagination/?page=1&order=${order}&sort=state&search=${search}`)
+                const paginated_data_state = await authFetchGET(`pagination/?page=1&order=${order}&sort=state&search=${search}`)
 
                 const res_state = await paginated_data_state.json()
 
@@ -328,7 +318,7 @@ function ShowCandidate() {
 
             case 'city':
                 setSort('city')
-                const paginated_data_city = await authFetch(`http://127.0.0.1:5000/pagination/?page=1&order=${order}&sort=city&search=${search}`)
+                const paginated_data_city = await authFetchGET(`pagination/?page=1&order=${order}&sort=city&search=${search}`)
 
                 const res_city = await paginated_data_city.json()
 
@@ -360,7 +350,7 @@ function ShowCandidate() {
                 if (localStorage.getItem("REACT_TOKEN_AUTH_KEY")) {
 
                     try {
-                        const paginated_data = await authFetch("http://127.0.0.1:5000/pagination/?page=1")
+                        const paginated_data = await authFetchGET("pagination/?page=1")
 
                         const res = await paginated_data.json()
 
@@ -382,9 +372,10 @@ function ShowCandidate() {
 
 
 
-                        const state = await axiosIntance.get("http://127.0.0.1:5000/fetch_state/")
-                        console.log("allState", state.data.data)
-                        setStates(state.data.data)
+                        const state = await authFetchGET("fetch_state/")
+                        const s = await state.json()
+                        console.log("allState", s.data)
+                        setStates(s.data)
 
 
 

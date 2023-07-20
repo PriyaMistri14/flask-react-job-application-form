@@ -2,6 +2,8 @@
 import axios from 'axios'
 import {createAuthProvider} from 'react-token-auth'
 
+const baseURL = 'http://127.0.0.1:5000/'
+
 
 const axiosIntance = axios.create({
     baseURL:'http://127.0.0.1:5000/',
@@ -30,6 +32,35 @@ export const {useAuth, authFetch, login, logout } = createAuthProvider({
         body: token.access_token
     }).then(r => r.json())
 })
+
+
+
+export const authFetchGET = async(url)=>{
+    const res = await authFetch(baseURL + url)
+    return res
+}
+
+export const authFetchPOST = async(url, payload)=>{
+    const res = await authFetch(baseURL+ url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+
+    })
+    return res
+
+}
+
+
+export const authFetchDELETE = async(url) =>{
+    const res = await authFetch( baseURL + url, {
+        method:'DELETE'
+    })
+
+    return res
+}
 
 
 

@@ -26,27 +26,7 @@ function App() {
   const [ logged ] = useAuth()
 
 
-  const logoutHandler = async () => {
-
-    try {
-
-      const res = await axiosIntance.post("http://127.0.0.1:8000/job/logout/", {
-        refresh_token: localStorage.getItem("refresh_token")
-      })
-
-    }
-    catch (error) {
-      console.log("Error while blacklisting tthe token :::::", error)
-    }
-
-
-    axiosIntance.defaults.headers["Authorization"] = null
-    localStorage.removeItem("access_token")
-    localStorage.removeItem("refresh_token")
-    navigate("/login/")
-
-
-  }
+ 
 
   return (
     <div className="App">

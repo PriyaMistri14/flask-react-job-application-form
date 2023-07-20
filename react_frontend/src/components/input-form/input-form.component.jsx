@@ -12,37 +12,48 @@ import { json, useNavigate } from 'react-router-dom'
 
 import { useParams } from 'react-router-dom'
 
-import { useAuth, authFetch } from '../../axiosApi'
+import { useAuth, authFetch, authFetchDELETE, authFetchGET, authFetchPOST } from '../../axiosApi'
 
 
 import { format, parseISO } from 'date-fns'
 
 
+const baseURL = 'http://127.0.0.1:5000/'
 
 
-const course = await axiosIntance.get("http://127.0.0.1:5000/select_all/1")
-console.log("Courses******************", course.data.data)
-const allCourses = course.data.data
 
-const language = await axiosIntance.get("http://127.0.0.1:5000/select_all/2")
-console.log("allLanguages", language.data.data)
-const allLanguages = language.data.data
+const course = await authFetchGET("select_all/1")
+const c = await course.json()
+console.log("Courses******************", c)
+const allCourses = c.data
 
-const technology = await axiosIntance.get("http://127.0.0.1:5000/select_all/3")
-console.log("allTechnology", technology.data.data)
-const allTechnologies = technology.data.data
+const language = await authFetchGET("select_all/2")
+const l = await language.json()
+console.log("allLanguages", l)
+const allLanguages = l.data
 
-const prefer_location = await axiosIntance.get("http://127.0.0.1:5000/select_all/4")
-console.log("allPreferLocation", prefer_location.data.data)
-const allPreferLocations = prefer_location.data.data
+const technology = await authFetchGET("select_all/3")
+const t = await technology.json()
+console.log("allTechnology", t)
+const allTechnologies = t.data
 
-const department = await axiosIntance.get("http://127.0.0.1:5000/select_all/5")
-console.log("allDepartment", department.data.data)
-const allDepartments = department.data.data
+const prefer_location = await authFetchGET("select_all/4")
+const p = await prefer_location.json()
+console.log("allPreferLocation", p)
+const allPreferLocations = p.data
 
-const state = await axiosIntance.get("http://127.0.0.1:5000/fetch_state/")
-console.log("allState", state.data.data)
-const allStates = state.data.data
+const department = await authFetchGET("select_all/5")
+const d = await department.json()
+console.log("allDepartment", d)
+const allDepartments = d.data
+
+const state = await authFetchGET("fetch_state/")
+const s = await state.json()
+console.log("allState", s)
+const allStates = s.data
+
+
+
 
 
 const InputForm = () => {
@@ -96,11 +107,14 @@ const InputForm = () => {
         var cities = []
 
         try {
-            const city = await axiosIntance.post("http://127.0.0.1:5000/fetch_city/", {
+            const payload ={
                 state: state
-            })
+            }
+            const city = await authFetchPOST("fetch_city/",payload )
 
-            cities = city.data.data
+            const c = await city.json()
+
+            cities = c.data
 
 
         } catch (error) {
@@ -190,15 +204,7 @@ const InputForm = () => {
     const createCandidate = async (values) => {
         try {
 
-
-            const resCand = await authFetch("http://127.0.0.1:5000/create_candidate", {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(values),
-
-            })
+            const resCand = await authFetchPOST("create_candidate", values)
 
             const res_cand = await resCand.json()
 
@@ -214,14 +220,7 @@ const InputForm = () => {
 
                     }
                     console.log("in academic:::", obj)
-                    const resAcad = await authFetch("http://127.0.0.1:5000/create_academic", {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(obj),
-
-                    })
+                    const resAcad = await authFetchPOST("create_academic", obj)
                     console.log("after fetch call", resAcad)
                     const res = await resAcad.json()
 
@@ -242,14 +241,7 @@ const InputForm = () => {
 
                     }
                     console.log("in experience:::", obj)
-                    const resExpe = await authFetch("http://127.0.0.1:5000/create_experience", {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(obj),
-
-                    })
+                    const resExpe = await authFetchPOST("create_experience", obj)
                     console.log("after fetch call", resExpe)
                     const res = await resExpe.json()
 
@@ -277,14 +269,7 @@ const InputForm = () => {
 
                         }
                         console.log("in language:::", obj)
-                        const resLang = await authFetch("http://127.0.0.1:5000/create_language", {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify(obj),
-
-                        })
+                        const resLang = await authFetchPOST("create_language", obj)
                         console.log("after fetch call", resLang)
                         const res = await resLang.json()
 
@@ -312,14 +297,7 @@ const InputForm = () => {
 
                         }
                         console.log("in technology:::", obj)
-                        const resTech = await authFetch("http://127.0.0.1:5000/create_technology", {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify(obj),
-
-                        })
+                        const resTech = await authFetchPOST("create_technology", obj)
                         console.log("after fetch call", resTech)
                         const res = await resTech.json()
 
@@ -348,14 +326,7 @@ const InputForm = () => {
 
                     }
                     console.log("in reference:::", obj)
-                    const resRefe = await authFetch("http://127.0.0.1:5000/create_reference", {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(obj),
-
-                    })
+                    const resRefe = await authFetchPOST("create_reference", obj)
                     console.log("after fetch call", resRefe)
                     const res = await resRefe.json()
 
@@ -383,14 +354,7 @@ const InputForm = () => {
 
                     }
                     console.log("in preference:::", obj)
-                    const resRefe = await authFetch("http://127.0.0.1:5000/create_preference", {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(obj),
-
-                    })
+                    const resRefe = await authFetchPOST("create_preference", obj)
                     console.log("after fetch call", resRefe)
                     const res = await resRefe.json()
 
@@ -426,7 +390,7 @@ const InputForm = () => {
     const fetchCandidate = async () => {
 
         try {
-            const res = await authFetch(`http://127.0.0.1:5000/fetch_candidate/${candidate_id}`)
+            const res = await authFetchGET(`fetch_candidate/${candidate_id}`)
             const candidate_fetched = await res.json()
 
             const candidate = candidate_fetched.data
@@ -625,15 +589,7 @@ const InputForm = () => {
 
         try {
 
-            const resCand = await authFetch(`http://127.0.0.1:5000/update_candidate/${candidate_id}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(values),
-
-
-            })
+            const resCand = await authFetchPOST(`update_candidate/${candidate_id}`,values)
             const res = await resCand.json()
             console.log("Response candidate updated:", res)
 
@@ -656,15 +612,7 @@ const InputForm = () => {
                         }
 
 
-                        const resAcademics = await authFetch(`http://127.0.0.1:5000/update_academics/${acde_ids[i]}`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify(obj),
-
-
-                        })
+                        const resAcademics = await authFetchPOST(`update_academics/${acde_ids[i]}`, obj)
 
                         const res = await resAcademics.json()
                         console.log("Response academic updated:", res)
@@ -686,15 +634,7 @@ const InputForm = () => {
                         }
 
 
-                        const resAcademics = await authFetch(`http://127.0.0.1:5000/update_academics/${acde_ids[i]}`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify(obj),
-
-
-                        })
+                        const resAcademics = await authFetchPOST(`update_academics/${acde_ids[i]}`, obj)
 
                         const res = await resAcademics.json()
                         console.log("Response academic updated:", res)
@@ -711,14 +651,7 @@ const InputForm = () => {
 
                         }
                         console.log("in academic:::", obj)
-                        const resAcad = await authFetch("http://127.0.0.1:5000/create_academic", {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify(obj),
-
-                        })
+                        const resAcad = await authFetchPOST("create_academic", obj)
                         const res = await resAcad.json()
 
                         console.log("Response academic created:", res)
@@ -738,15 +671,7 @@ const InputForm = () => {
                         }
 
 
-                        const resAcademics = await authFetch(`http://127.0.0.1:5000/update_academics/${acde_ids[i]}`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify(obj),
-
-
-                        })
+                        const resAcademics = await authFetchPOST(`update_academics/${acde_ids[i]}`, obj)
 
                         const res = await resAcademics.json()
                         console.log("Response academic updated:", res)
@@ -755,9 +680,7 @@ const InputForm = () => {
 
 
                     for (var i = values.academics.length; i < acde_ids.length; i++) {
-                        const res = await authFetch(`http://127.0.0.1:5000/delete_academic/${acde_ids[i]}`, {
-                            method: 'DELETE'
-                        })
+                        const res = await authFetchDELETE(`delete_academic/${acde_ids[i]}`)
                         const data = await res.json()                      
 
                         console.log("Response academic deleted:", data)
@@ -784,16 +707,7 @@ const InputForm = () => {
 
                         }
 
-                        const resExpe = await authFetch(`http://127.0.0.1:5000/update_experiences/${expe_ids[i]}`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify(obj),
-
-
-
-                        })
+                        const resExpe = await authFetchPOST(`update_experiences/${expe_ids[i]}`, obj)
 
                         const res = await resExpe.json()
 
@@ -814,16 +728,7 @@ const InputForm = () => {
 
                         }
 
-                        const resExpe = await authFetch(`http://127.0.0.1:5000/update_experiences/${expe_ids[i]}`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify(obj),
-
-
-
-                        })
+                        const resExpe = await authFetchPOST(`update_experiences/${expe_ids[i]}`, obj)
 
                         const res = await resExpe.json()
 
@@ -840,14 +745,7 @@ const InputForm = () => {
 
                         }
                         console.log("in experience:::", obj)
-                        const resExpe = await authFetch("http://127.0.0.1:5000/create_experience", {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify(obj),
-
-                        })
+                        const resExpe = await authFetchPOST("create_experience", obj)
                         console.log("after fetch call", resExpe)
                         const res = await resExpe.json()
 
@@ -872,16 +770,7 @@ const InputForm = () => {
 
                         }
 
-                        const resExpe = await authFetch(`http://127.0.0.1:5000/update_experiences/${expe_ids[i]}`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify(obj),
-
-
-
-                        })
+                        const resExpe = await authFetchPOST(`update_experiences/${expe_ids[i]}`, obj)
 
                         const res = await resExpe.json()
 
@@ -894,9 +783,7 @@ const InputForm = () => {
 
                     for (var i = values.experiences.length; i < expe_ids.length; i++) {
 
-                        const res = await authFetch(`http://127.0.0.1:5000/delete_experience/${expe_ids[i]}`, {
-                            method: 'DELETE'
-                        })
+                        const res = await authFetchDELETE(`delete_experience/${expe_ids[i]}`)
                         const data = await res.json()
                       
 
@@ -928,23 +815,14 @@ const InputForm = () => {
                             }
 
 
-                            const resLang = await authFetch(`http://127.0.0.1:5000/update_languages/${lang_ids[i]}`, {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                },
-                                body: JSON.stringify(obj),
-
-                            })
+                            const resLang = await authFetchPOST(`update_languages/${lang_ids[i]}`, obj)
 
                             const res = await resLang.json()
 
                             console.log("Response language updated:", res)
 
                         } else {
-                            const res = await authFetch(`http://127.0.0.1:5000/delete_language/${lang_ids[i]}`, {
-                                method: 'DELETE'
-                            })
+                            const res = await authFetchDELETE(`delete_language/${lang_ids[i]}`)
 
                             const data = await res.json()
                            
@@ -974,14 +852,7 @@ const InputForm = () => {
                             }
 
 
-                            const resLang = await authFetch(`http://127.0.0.1:5000/update_languages/${lang_ids[i]}`, {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                },
-                                body: JSON.stringify(obj),
-
-                            })
+                            const resLang = await authFetchPOST(`update_languages/${lang_ids[i]}`, obj)
 
                             const res = await resLang.json()
 
@@ -991,9 +862,7 @@ const InputForm = () => {
 
                         } else {
 
-                            const res = await authFetch(`http://127.0.0.1:5000/delete_language/${lang_ids[i]}`, {
-                                method: 'DELETE'
-                            })
+                            const res = await authFetchDELETE(`delete_language/${lang_ids[i]}`)
 
                             const data = await res.json()
                           
@@ -1005,7 +874,7 @@ const InputForm = () => {
 
                     for (var i = lang_ids.length; i < values.languages.length; i++) {
 
-                        if (values.languages[i].languageName.length !== 0) {
+                        if (values.languages[i].languageName && values.languages[i].languageName.length !== 0) {
 
 
                             const obj = {
@@ -1014,14 +883,7 @@ const InputForm = () => {
 
                             }
                             console.log("in language:::", obj)
-                            const resLang = await authFetch("http://127.0.0.1:5000/create_language", {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                },
-                                body: JSON.stringify(obj),
-
-                            })
+                            const resLang = await authFetchPOST("create_language", obj)
                             console.log("after fetch call", resLang)
                             const res = await resLang.json()
 
@@ -1053,22 +915,14 @@ const InputForm = () => {
 
                             }
 
-                            const resTech = await authFetch(`http://127.0.0.1:5000/update_technologies/${tech_ids[i]}`, {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                },
-                                body: JSON.stringify(obj),
-                            })
+                            const resTech = await authFetchPOST(`update_technologies/${tech_ids[i]}`, obj)
 
                             const res = await resTech.json()
                             console.log("Response technology updated:", res)
 
                         } else {
 
-                            const res = await authFetch(`http://127.0.0.1:5000/delete_technology/${tech_ids[i]}`, {
-                                method: "DELETE"
-                            })
+                            const res = await authFetchDELETE(`delete_technology/${tech_ids[i]}`)
 
                             const data = await res.json()
                             console.log("DATATAT TECH:   ", data);
@@ -1098,13 +952,7 @@ const InputForm = () => {
 
                             }
 
-                            const resTech = await authFetch(`http://127.0.0.1:5000/update_technologies/${tech_ids[i]}`, {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                },
-                                body: JSON.stringify(obj),
-                            })
+                            const resTech = await authFetchPOST(`update_technologies/${tech_ids[i]}`, obj)
 
                             const res = await resTech.json()
                             console.log("Response technology updated:", res)
@@ -1119,11 +967,9 @@ const InputForm = () => {
 
                             // console.log("Response technology updated:", resTech)
 
-                        } else {
+                    } else {
 
-                            const res = await authFetch(`http://127.0.0.1:5000/delete_technology/${tech_ids[i]}`, {
-                                method: "DELETE"
-                            })
+                            const res = await authFetchDELETE(`delete_technology/${tech_ids[i]}`)
 
                             const data = await res.json()
                             console.log("DATATAT TECH:   ", data);
@@ -1146,14 +992,7 @@ const InputForm = () => {
 
                             }
                             console.log("in technology:::", obj)
-                            const resTech = await authFetch("http://127.0.0.1:5000/create_technology", {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                },
-                                body: JSON.stringify(obj),
-
-                            })
+                            const resTech = await authFetchPOST("create_technology", obj)
                             console.log("after fetch call", resTech)
                             const res = await resTech.json()
 
@@ -1183,13 +1022,7 @@ const InputForm = () => {
                         }
 
 
-                        const resRefe = await authFetch(`http://127.0.0.1:5000/update_references/${refe_ids[i]}`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify(obj),
-                        })
+                        const resRefe = await authFetchPOST(`update_references/${refe_ids[i]}`, obj)
 
 
                         const res = await resRefe.json()
@@ -1211,13 +1044,7 @@ const InputForm = () => {
                         }
 
 
-                        const resRefe = await authFetch(`http://127.0.0.1:5000/update_references/${refe_ids[i]}`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify(obj),
-                        })
+                        const resRefe = await authFetchPOST(`update_references/${refe_ids[i]}`, obj)
 
 
                         const res = await resRefe.json()
@@ -1239,14 +1066,7 @@ const InputForm = () => {
 
                         }
                         console.log("in reference:::", obj)
-                        const resRefe = await authFetch("http://127.0.0.1:5000/create_reference", {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify(obj),
-
-                        })
+                        const resRefe = await authFetchPOST("create_reference", obj)
                         console.log("after fetch call", resRefe)
                         const res = await resRefe.json()
 
@@ -1269,13 +1089,7 @@ const InputForm = () => {
                         }
 
 
-                        const resRefe = await authFetch(`http://127.0.0.1:5000/update_references/${refe_ids[i]}`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify(obj),
-                        })
+                        const resRefe = await authFetchPOST(`update_references/${refe_ids[i]}`,obj)
 
 
                         const res = await resRefe.json()
@@ -1288,9 +1102,7 @@ const InputForm = () => {
 
                     for (var i = values.references.length; i < refe_ids.length; i++) {
 
-                        const res = await authFetch(`http://127.0.0.1:5000/delete_reference/${refe_ids[i]}`, {
-                            method: 'DELETE'
-                        })
+                        const res = await authFetchDELETE(`delete_reference/${refe_ids[i]}`)
 
                         const data = await res.json()
                   
@@ -1319,13 +1131,7 @@ const InputForm = () => {
 
 
 
-                        const resPref = await authFetch(`http://127.0.0.1:5000/update_preferences/${pref_ids[i]}`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify(obj),
-                        })
+                        const resPref = await authFetchPOST(`update_preferences/${pref_ids[i]}`, obj)
 
                         const res = await resPref.json()
 
@@ -1351,13 +1157,7 @@ const InputForm = () => {
 
 
 
-                        const resPref = await authFetch(`http://127.0.0.1:5000/update_preferences/${pref_ids[i]}`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify(obj),
-                        })
+                        const resPref = await authFetchPOST(`update_preferences/${pref_ids[i]}`, obj)
 
                         const res = await resPref.json()
 
@@ -1381,14 +1181,7 @@ const InputForm = () => {
     
                         }
                         console.log("in preference:::", obj)
-                        const resPrefe = await authFetch("http://127.0.0.1:5000/create_preference", {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify(obj),
-    
-                        })
+                        const resPrefe = await authFetchPOST("create_preference", obj)
                         console.log("after fetch call", resPrefe)
                         const res = await resPrefe.json()
     
@@ -1415,13 +1208,7 @@ const InputForm = () => {
 
 
 
-                        const resPref = await authFetch(`http://127.0.0.1:5000/update_preferences/${pref_ids[i]}`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify(obj),
-                        })
+                        const resPref = await authFetchPOST(`update_preferences/${pref_ids[i]}`, obj)
 
                         const res = await resPref.json()
 
@@ -1433,9 +1220,7 @@ const InputForm = () => {
 
 
                     for (var i = values.demoLocation.length; i < pref_ids.length; i++) {
-                        const res = await authFetch(`http://127.0.0.1:5000/delete_preference/${pref_ids[i]}`,{
-                            method:"DELETE"
-                        })
+                        const res = await authFetchDELETE(`delete_preference/${pref_ids[i]}`)
     
                         const data = await res.json()
                         
@@ -1627,7 +1412,7 @@ const InputForm = () => {
 
             var arr = []
             for (var i = 0; i < value.length; i++) {
-                if (value[i].languageName != undefined && value[i].languageName.length !== 0) {
+                if (value[i] && value[i].languageName != undefined && value[i].languageName.length !== 0) {
                     arr.push(true)
                     break
 
@@ -1646,7 +1431,7 @@ const InputForm = () => {
 
             var arr = []
             for (var i = 0; i < value.length; i++) {
-                if (value[i].technologyName != undefined && value[i].technologyName.length !== 0) {
+                if (value[i] && value[i].technologyName != undefined && value[i].technologyName.length !== 0) {
                     arr.push(true)
                     break
 

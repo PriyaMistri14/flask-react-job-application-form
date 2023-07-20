@@ -22,6 +22,9 @@ from functools import wraps
 import flask_praetorian
 
 
+from sqlalchemy import cast, String
+
+
 # .........
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
@@ -126,7 +129,7 @@ class Candidate(db.Model):
     fname = db.Column(db.String, nullable = False)
     lname = db.Column(db.String, nullable= False)
     surname = db.Column(db.String, nullable= False)
-    contact_no = db.Column(db.Integer, nullable= False)
+    contact_no = db.Column(db.String, nullable= False)
     city = db.Column(db.String, nullable= False)
     state = db.Column(db.String, nullable = False)
     email = db.Column(db.String, nullable = False)
@@ -182,7 +185,7 @@ class Technology(db.Model):
 class Reference(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     refe_name = db.Column(db.String, unique = False, nullable = False)
-    refe_contact_no = db.Column(db.Integer, unique = False , nullable = False)
+    refe_contact_no = db.Column(db.String, unique = False , nullable = False)
     refe_relation = db.Column(db.String, unique = False, nullable= False)
     candidate_id = db.Column(db.Integer, db.ForeignKey('candidate.id'))
 
@@ -400,9 +403,7 @@ def create_candidate():
 
         candidate = request.get_json(force=True)
         # candidate = json.loads(request.data.decode('utf-8'))
-        print("RRRRRRRR",candidate['fname'] )
-
-        
+        print("RRRRRRRR",candidate['fname'], "lname = ",candidate["lname"],"surname = ",candidate["surname"],"contact_no = ",candidate["phone"], "gender =" ,candidate["gender"], "email =" ,candidate["email"], "city = ",candidate["city"], "state = ",candidate["state"],  "dob = ",candidate["dob"])       
 
 
         cand_obj = Candidate(fname=candidate['fname'],
@@ -424,8 +425,9 @@ def create_candidate():
         print("AFTER::::", )        
         return make_response({"data":cand_obj.id, "message":"Successfully created candidate"}, 200)
         # return f"Successfully created!! {cand_obj}"
-    except:
-        return make_response({"data":"", "message":"Error while creating candidate in backend"}, 200)    
+    except Exception as e:
+        print("EEEERRRORR : ", e)
+        return make_response({"data":"Error", "message":"Error while creating candidate in backend"}, 200)    
 
 
 
@@ -436,7 +438,7 @@ def create_academic():
     # academic = json.loads(request.data.decode('utf-8'))
     try:
         academic = request.get_json(force=True)
-        print("ACADEMIC:", academic['academic']['courseName'])
+        print("ACADEMIC:", academic['candidate'])
         acad_obj = Academic(course_name = academic['academic']["courseName"],
                             name_of_board_university = academic['academic']["nameOfBoardUniversity"],
                             passing_year = academic['academic']["passingYear"],
@@ -489,18 +491,22 @@ def create_language():
     try:
 
         language = request.get_json(force=True)
-        print("LANGUAGE:", language['language']['languageName'][0], "LANGUAGE WRITE:",language['language']["write"])
-
+        print(".......................LANGUAGE:", language['language']['languageName'][0], "LANGUAGE WRITE:",language['language']["write"],"READ: ", language['language']['read'], "SPEAKKK : ", language['language']['speak'])
+        read = True if language['language']['read'] == True else False
+        write = True if language['language']["write"] == True else False
+        speak = True if language['language']['speak'] == True else False
+        print("RRRR", read, write, speak)
         lang_obj = Language(language= language['language']["languageName"][0],
-                        read = language['language']['read'],
-                        write = language['language']["write"],
-                        speak = language['language']['speak'],
+                        read = read,
+                        write = write,
+                        speak = speak,
                         candidate_id=language["candidate"]
                         )
 
-
+        print("LANGGG: ", lang_obj)
         db.session.add(lang_obj)
         db.session.commit()
+        print("LANGGG: AFTER ", lang_obj)
 
         
         return make_response({"data":lang_obj.id, "message":"Successfully created candidate"}, 200)
@@ -561,7 +567,8 @@ def create_reference():
 
         return make_response({"data":refe_obj.id, "message":"Successfully created candidate"}, 200)
 
-     except:
+     except Exception as e:
+        print("ERRRRRRR:  ", e)
         return make_response({"data":"Error", "message":"Error while creating reference in backend"}, 200)    
 
 
@@ -748,44 +755,44 @@ def pagination():
        
 
         if order and sort and sort == 'fname':
-            paginated_data = db.paginate(Candidate.query.filter((Candidate.fname.icontains(search)) | (Candidate.lname.icontains(search)) | (Candidate.surname.icontains(search))  | (Candidate.email.icontains(search)) | (Candidate.state.icontains(search)) | (Candidate.city.icontains(search))).order_by(Candidate.fname), page=pages, per_page=per_page) if order == 'asc' else db.paginate(Candidate.query.filter((Candidate.fname.icontains(search)) | (Candidate.lname.icontains(search)) | (Candidate.isurname.contains(search)) | (Candidate.email.icontains(search)) | (Candidate.state.icontains(search)) | (Candidate.city.icontains(search))).order_by(Candidate.fname.desc()), page=pages, per_page=per_page)
+            paginated_data = db.paginate(Candidate.query.filter((Candidate.fname.icontains(search)) | (Candidate.lname.icontains(search)) | (Candidate.surname.icontains(search))  | (Candidate.email.icontains(search)) | (Candidate.state.icontains(search)) | (Candidate.city.icontains(search)) |  cast( Candidate.contact_no, String ).like( '%'+search+'%' ) ).order_by(Candidate.fname), page=pages, per_page=per_page) if order == 'asc' else db.paginate(Candidate.query.filter((Candidate.fname.icontains(search)) | (Candidate.lname.icontains(search)) | (Candidate.surname.contains(search)) | (Candidate.email.icontains(search)) | (Candidate.state.icontains(search)) | (Candidate.city.icontains(search))  |  cast( Candidate.contact_no, String ).like( '%'+search+'%' )).order_by(Candidate.fname.desc()), page=pages, per_page=per_page)
 
             print("Paginated_data::SEEEEE", paginated_data.total)
 
         elif order and sort and sort == 'lname':
-            paginated_data = db.paginate(Candidate.query.filter((Candidate.fname.icontains(search)) | (Candidate.lname.icontains(search)) | (Candidate.surname.icontains(search))  | (Candidate.email.icontains(search)) | (Candidate.state.icontains(search)) | (Candidate.city.icontains(search))).order_by(Candidate.lname), page=pages, per_page=per_page) if order == 'asc' else db.paginate(Candidate.query.filtre((Candidate.fname.icontains(search)) | (Candidate.lname.icontains(search)) | (Candidate.surname.icontains(search)) | (Candidate.email.icontains(search)) | (Candidate.state.icontains(search)) | (Candidate.city.icontains(search))).order_by(Candidate.lname.desc()), page=pages, per_page=per_page)
+            paginated_data = db.paginate(Candidate.query.filter((Candidate.fname.icontains(search)) | (Candidate.lname.icontains(search)) | (Candidate.surname.icontains(search))  | (Candidate.email.icontains(search)) | (Candidate.state.icontains(search)) | (Candidate.city.icontains(search)) |  cast( Candidate.contact_no, String ).like( '%'+search+'%' )).order_by(Candidate.lname), page=pages, per_page=per_page) if order == 'asc' else db.paginate(Candidate.query.filtre((Candidate.fname.icontains(search)) | (Candidate.lname.icontains(search)) | (Candidate.surname.icontains(search)) | (Candidate.email.icontains(search)) | (Candidate.state.icontains(search)) | (Candidate.city.icontains(search))  |  cast( Candidate.contact_no, String ).like( '%'+search+'%' )).order_by(Candidate.lname.desc()), page=pages, per_page=per_page)
 
             print("Paginated_data::", paginated_data.total)
 
         elif order and sort and sort == 'surname':
-            paginated_data = db.paginate(Candidate.query.filter((Candidate.fname.icontains(search)) | (Candidate.lname.icontains(search)) | (Candidate.surname.icontains(search)) | (Candidate.email.icontains(search)) | (Candidate.state.icontains(search)) | (Candidate.city.icontains(search))).order_by(Candidate.surname), page=pages, per_page=per_page) if order == 'asc' else db.paginate(Candidate.query.filter((Candidate.fname.icontains(search)) | (Candidate.lname.icontains(search)) | (Candidate.surname.icontains(search)) | (Candidate.email.icontains(search)) | (Candidate.state.icontains(search)) | (Candidate.city.icontains(search))).order_by(Candidate.surname.desc()), page=pages, per_page=per_page)
+            paginated_data = db.paginate(Candidate.query.filter((Candidate.fname.icontains(search)) | (Candidate.lname.icontains(search)) | (Candidate.surname.icontains(search)) | (Candidate.email.icontains(search)) | (Candidate.state.icontains(search)) | (Candidate.city.icontains(search)) |  cast( Candidate.contact_no, String ).like( '%'+search+'%' )).order_by(Candidate.surname), page=pages, per_page=per_page) if order == 'asc' else db.paginate(Candidate.query.filter((Candidate.fname.icontains(search)) | (Candidate.lname.icontains(search)) | (Candidate.surname.icontains(search)) | (Candidate.email.icontains(search)) | (Candidate.state.icontains(search)) | (Candidate.city.icontains(search)) |  cast( Candidate.contact_no, String ).like( '%'+search+'%' )).order_by(Candidate.surname.desc()), page=pages, per_page=per_page)
 
             print("Paginated_data::", paginated_data.total)
 
         elif order and sort and sort == 'contact_no':
-            paginated_data = db.paginate(Candidate.query.filter((Candidate.fname.icontains(search)) | (Candidate.lname.icontains(search)) | (Candidate.surname.icontains(search)) | (Candidate.email.icontains(search)) | (Candidate.state.icontains(search)) | (Candidate.city.icontains(search))).order_by(Candidate.contact_no), page=pages, per_page=per_page) if order == 'asc' else db.paginate(Candidate.query.filter((Candidate.fname.icontains(search)) | (Candidate.lname.icontains(search)) | (Candidate.surname.icontains(search))  | (Candidate.email.icontains(search)) | (Candidate.state.icontains(search)) | (Candidate.city.icontains(search))).order_by(Candidate.contact_no.desc()), page=pages, per_page=per_page)
+            paginated_data = db.paginate(Candidate.query.filter((Candidate.fname.icontains(search)) | (Candidate.lname.icontains(search)) | (Candidate.surname.icontains(search)) | (Candidate.email.icontains(search)) | (Candidate.state.icontains(search)) | (Candidate.city.icontains(search)) |  cast( Candidate.contact_no, String ).like( '%'+search+'%' )).order_by(Candidate.contact_no), page=pages, per_page=per_page) if order == 'asc' else db.paginate(Candidate.query.filter((Candidate.fname.icontains(search)) | (Candidate.lname.icontains(search)) | (Candidate.surname.icontains(search))  | (Candidate.email.icontains(search)) | (Candidate.state.icontains(search)) | (Candidate.city.icontains(search)) |  cast( Candidate.contact_no, String ).like( '%'+search+'%' )).order_by(Candidate.contact_no.desc()), page=pages, per_page=per_page)
 
             print("Paginated_data::", paginated_data.total)
 
         elif order and sort and sort == 'email':
-            paginated_data = db.paginate(Candidate.query.filter((Candidate.fname.icontains(search)) | (Candidate.lname.icontains(search)) | (Candidate.surname.icontains(search)) | (Candidate.email.icontains(search)) | (Candidate.state.icontains(search)) | (Candidate.city.icontains(search))).order_by(Candidate.email), page=pages, per_page=per_page) if order == 'asc' else db.paginate(Candidate.query.filter((Candidate.fname.icontains(search)) | (Candidate.lname.icontains(search)) | (Candidate.surname.icontains(search)) | (Candidate.email.icontains(search)) | (Candidate.state.icontains(search)) | (Candidate.city.icontains(search))).order_by(Candidate.email.desc()), page=pages, per_page=per_page)
+            paginated_data = db.paginate(Candidate.query.filter((Candidate.fname.icontains(search)) | (Candidate.lname.icontains(search)) | (Candidate.surname.icontains(search)) | (Candidate.email.icontains(search)) | (Candidate.state.icontains(search)) | (Candidate.city.icontains(search)) |  cast( Candidate.contact_no, String ).like( '%'+search+'%' )).order_by(Candidate.email), page=pages, per_page=per_page) if order == 'asc' else db.paginate(Candidate.query.filter((Candidate.fname.icontains(search)) | (Candidate.lname.icontains(search)) | (Candidate.surname.icontains(search)) | (Candidate.email.icontains(search)) | (Candidate.state.icontains(search)) | (Candidate.city.icontains(search)) |  cast( Candidate.contact_no, String ).like( '%'+search+'%' )).order_by(Candidate.email.desc()), page=pages, per_page=per_page)
 
             print("Paginated_data::", paginated_data.total)
 
 
         elif order and sort and sort == 'state':
-            paginated_data = db.paginate(Candidate.query.filter((Candidate.fname.icontains(search)) | (Candidate.lname.icontains(search)) | (Candidate.surname.icontains(search)) | (Candidate.email.icontains(search)) | (Candidate.state.icontains(search)) | (Candidate.city.icontains(search))).order_by(Candidate.state), page=pages, per_page=per_page) if order == 'asc' else db.paginate(Candidate.query.filter((Candidate.fname.contains(search)) | (Candidate.lname.contains(search)) | (Candidate.surname.contains(search)) | (Candidate.email.contains(search)) | (Candidate.state.contains(search)) | (Candidate.city.contains(search))).order_by(Candidate.state.desc()), page=pages, per_page=per_page)
+            paginated_data = db.paginate(Candidate.query.filter((Candidate.fname.icontains(search)) | (Candidate.lname.icontains(search)) | (Candidate.surname.icontains(search)) | (Candidate.email.icontains(search)) | (Candidate.state.icontains(search)) | (Candidate.city.icontains(search)) |  cast( Candidate.contact_no, String ).like( '%'+search+'%' )).order_by(Candidate.state), page=pages, per_page=per_page) if order == 'asc' else db.paginate(Candidate.query.filter((Candidate.fname.contains(search)) | (Candidate.lname.contains(search)) | (Candidate.surname.contains(search)) | (Candidate.email.contains(search)) | (Candidate.state.contains(search)) | (Candidate.city.contains(search)) |  cast( Candidate.contact_no, String ).like( '%'+search+'%' )).order_by(Candidate.state.desc()), page=pages, per_page=per_page)
 
             print("Paginated_data::", paginated_data.total)
 
         elif order and sort and sort == 'city':
-            paginated_data = db.paginate(Candidate.query.filter((Candidate.fname.icontains(search)) | (Candidate.lname.icontains(search)) | (Candidate.surname.icontains(search)) | (Candidate.email.icontains(search)) | (Candidate.state.icontains(search)) | (Candidate.city.icontains(search))).order_by(Candidate.city), page=pages, per_page=per_page) if order == 'asc' else db.paginate(Candidate.query.filter((Candidate.fname.contains(search)) | (Candidate.lname.contains(search)) | (Candidate.surname.contains(search)) | (Candidate.email.contains(search)) | (Candidate.state.contains(search)) | (Candidate.city.contains(search))).order_by(Candidate.city.desc()), page=pages, per_page=per_page)
+            paginated_data = db.paginate(Candidate.query.filter((Candidate.fname.icontains(search)) | (Candidate.lname.icontains(search)) | (Candidate.surname.icontains(search)) | (Candidate.email.icontains(search)) | (Candidate.state.icontains(search)) | (Candidate.city.icontains(search)) |  cast( Candidate.contact_no, String ).like( '%'+search+'%' )).order_by(Candidate.city), page=pages, per_page=per_page) if order == 'asc' else db.paginate(Candidate.query.filter((Candidate.fname.contains(search)) | (Candidate.lname.contains(search)) | (Candidate.surname.contains(search)) | (Candidate.email.contains(search)) | (Candidate.state.contains(search)) | (Candidate.city.contains(search)) |  cast( Candidate.contact_no, String ).like( '%'+search+'%' )).order_by(Candidate.city.desc()), page=pages, per_page=per_page)
 
             print("Paginated_data::", paginated_data.total)
 
         else:
 
-            paginated_data = db.paginate(Candidate.query.filter((Candidate.fname.icontains(search)) | (Candidate.lname.icontains(search)) | (Candidate.surname.icontains(search)) | (Candidate.email.icontains(search)) | (Candidate.state.icontains(search)) | (Candidate.city.icontains(search))).order_by(Candidate.id), page=pages, per_page=per_page)
+            paginated_data = db.paginate(Candidate.query.filter((Candidate.fname.icontains(search)) | (Candidate.lname.icontains(search)) | (Candidate.surname.icontains(search)) | (Candidate.email.icontains(search)) | (Candidate.state.icontains(search)) | (Candidate.city.icontains(search)) |  cast( Candidate.contact_no, String ).like( '%'+search+'%' )).order_by(Candidate.id), page=pages, per_page=per_page)
             print("Paginated_data::", paginated_data.total)
 
 

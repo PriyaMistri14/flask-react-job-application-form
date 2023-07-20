@@ -6,13 +6,15 @@ import React from 'react'
 import { Formik, Field, Form, ErrorMessage } from 'formik'
 
 import * as Yup from 'yup'
-import axiosIntance, { login } from '../../axiosApi'
+import axiosIntance, { authFetchPOST, login } from '../../axiosApi'
 
 import axios from 'axios'
 
 import { useState } from 'react'
 
 import { Link, useNavigate } from 'react-router-dom'
+
+const baseURL = "http://127.0.0.1:5000/"
 
 
 
@@ -39,17 +41,24 @@ function LoginForm() {
         console.log('form values::', values, "form::", form)
         try {
 
-            const res = await axiosIntance.post('http://127.0.0.1:5000/login/', {
+            // const res = await axiosIntance.post( baseURL +'login/', {
+            //     username: values.username,
+            //     password: values.password
+            // })
+            const payload = {
                 username: values.username,
                 password: values.password
-            })
+            }
 
-            console.log("RESPONSEE:   ", res)
-            if(res.data.access_token){
-                login(res.data)
+            const res = await authFetchPOST("login/", payload)
+            const result = await res.json()
+
+            console.log("RESPONSEE:   ", result)
+            if (result.access_token) {
+                login(result.access_token)
                 navigate("/input-form/")
             }
-            else{
+            else {
                 form.setFieldError("password", "No active account found with the given credentials")
             }
 
