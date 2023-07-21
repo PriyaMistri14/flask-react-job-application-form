@@ -10,7 +10,7 @@ import axiosIntance, { authFetchPOST, login } from '../../axiosApi'
 
 import axios from 'axios'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 import { Link, useNavigate } from 'react-router-dom'
 
@@ -21,6 +21,16 @@ const baseURL = "http://127.0.0.1:5000/"
 function LoginForm() {
 
     const navigate = useNavigate()
+
+    useEffect(() => {
+       
+        if (localStorage.getItem("REACT_TOKEN_AUTH_KEY")) {
+            navigate("/input-form/")
+        }
+
+    }, [])
+
+
 
 
 

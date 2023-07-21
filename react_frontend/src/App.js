@@ -6,7 +6,7 @@ import InputForm from './components/input-form/input-form.component';
 import React from 'react';
 
 
-import axiosIntance, { logout, useAuth, authFetch } from './axiosApi';
+import  { logout, useAuth, authFetch } from './axiosApi';
 
 import LoginForm from './components/login-from/login-form.component';
 import RegistrationForm from './components/registration-form/registration-form.component';
@@ -24,8 +24,9 @@ function App() {
 
   const navigate = useNavigate()
   const [ logged ] = useAuth()
+  console.log("TOKEENN:  ", localStorage.getItem("REACT_TOKEN_AUTH_KEY").slice(1,-1));
 
-
+ 
  
 
   return (
@@ -42,7 +43,7 @@ function App() {
 
        
         <Link to="/input-form/" className='nav-link' ><strong>Input Form</strong></Link>
-        <Link to="/show-candidate/" className='nav-link' ><strong>Show Candidate</strong></Link>
+        <Link to="/show-candidate/" className='nav-link' ><strong>Show Candidate</strong></Link>       
        
 
       </nav>

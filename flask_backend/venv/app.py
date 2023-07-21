@@ -206,18 +206,18 @@ class Preference(db.Model):
 
 #  token required
 
-def token_required(fun):
-    @wraps(fun)
-    def decorated(*args, **kwargs):
-        token = request.args.get('token')
-        if not token:
-            return jsonify({"data":"Token is missing"})
-        try:
-            payload = jwt.decode(token, app.config['SECRET_KEY'])
-        except:
-            return jsonify({"data":"Invalid token!"})   
+# def token_required(fun):
+#     @wraps(fun)
+#     def decorated(*args, **kwargs):
+#         token = request.args.get('token')
+#         if not token:
+#             return jsonify({"data":"Token is missing"})
+#         try:
+#             payload = jwt.decode(token, app.config['SECRET_KEY'])
+#         except:
+#             return jsonify({"data":"Invalid token!"})   
 
-    return decorated             
+#     return decorated             
 
 
 
@@ -276,49 +276,6 @@ def login():
         return make_response({"data":"", "message":"No active account found with the given credentials!"}, 200)   
  
 
-    # if user: 
-    #     return make_response({'access_token': guard.encode_jwt_token(user)}, 200)
-    # else:
-
-    #     return make_response({"data":"", "message":"No active account found with the given credentials!"}, 200)   
- 
-
-
-
-    # user = User.query.filter_by(email = username).first()
-
-    # if user and bcrypt.check_password_hash(user.password,password):
-    #     session["is_logged_in"] = True
-    #     token = jwt.encode({
-    #         'user':username,
-    #         'expiration': str(datetime.utcnow() + timedelta(seconds = 120))
-    #     }, app.config["SECRET_KEY"])
-
-    #     json_token = json.dumps({'token': token.decode('utf-8')})
-    #     return make_response({"data":json_token, "message":"successfully login!"}, 200)
-
-    # return  make_response({"data":"", "message":"No active account found with the given credentials!"}, 200)   
-
-
-
-    # if username == "ram@gmail.com" and password == "12345678":
-    #     print("TTTTTTTTTTTTTTTTTTTTTTT")
-    #     session["is_logged_in"] = True
-    #     token = jwt.encode({
-    #         'user':username,
-    #         'expiration': str(datetime.utcnow() + timedelta(seconds = 120))
-    #     }, app.config["SECRET_KEY"])
-
-    #     json_token = json.dumps({'token': token.decode('utf-8')})
-
-    #     print("OOOOOOOOOOOOOOOOOOOOOOOOOOOtoken", json_token )
- 
-
-
-    #     return make_response(json_token, 200)
-
-    #     # return f"successFullu login {token}"
-    # return make_response({"data":"error while login"}, 200)
 
 
 
